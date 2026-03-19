@@ -1,5 +1,11 @@
 .login-background {
-  --background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7)), url('../../../assets/images/tourist_login_bg.png') no-repeat center center / cover;
+  /* Fondo con el color verde turquesa sólido (Modo Claro) */
+  --background: var(--ion-color-primary, #22805d);
+}
+
+/* Regla para el modo oscuro directamente en el componente */
+:host-context(.ion-palette-dark) .login-background {
+  --background: rgba(0, 0, 0, 0.6) !important;
 }
 
 .login-container {
