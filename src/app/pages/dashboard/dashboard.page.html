@@ -1,29 +1,4 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar class="geo-toolbar">
-    <ion-buttons slot="start">
-      <ion-menu-button class="toolbar-menu-btn"></ion-menu-button>
-    </ion-buttons>
-    
-    <ion-title>
-      <div class="header-logo">
-        <ion-icon name="analytics-outline"></ion-icon>
-        <div class="logo-text">
-          <strong>GEOTOURIST</strong>
-          <span>DASHBOARD</span>
-        </div>
-      </div>
-    </ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="openNotifications()">
-        <ion-icon slot="icon-only" name="notifications-outline" class="notif-icon"></ion-icon>
-        @if (unreadNotificationsCount() > 0) {
-          <ion-badge color="danger" class="notif-badge">{{ unreadNotificationsCount() }}</ion-badge>
-        }
-      </ion-button>
-      <div class="user-avatar" (click)="goToProfile()" style="cursor: pointer;">{{ userInitials() }}</div>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<app-header title="DASHBOARD"></app-header>
 
 <ion-content color="light">
   <div class="responsive-container">
@@ -34,7 +9,6 @@
       </div>
     </div>
 
-    <!-- Acceso rápido a Monitoreo -->
     <div class="live-status-card" (click)="goToMonitoring()">
       <div class="live-info">
         <ion-icon name="eye-outline" class="live-icon"></ion-icon>
@@ -51,7 +25,6 @@
     </div>
 
 
-    <!-- Sección de Insights Inteligentes -->
     @if (insights()) {
       <div class="insights-container">
         <div class="insight-card-main">
@@ -108,7 +81,6 @@
       <button class="time-pill" [class.active]="timeFilter() === 'Mes'" (click)="setFilter('Mes')">Mes</button>
     </div>
 
-    <!-- Mapa de Ocupación -->
     <div class="geo-card-premium map-card">
       <div class="card-header">
         <h2>Mapa de Ocupación</h2>
@@ -123,7 +95,6 @@
     </div>
 
     <div class="desktop-grid">
-      <!-- Tarjeta 1: Gráfico -->
       <div class="geo-card-premium">
         <div class="card-header">
           <h2>Distribución de Flujo</h2>
@@ -152,7 +123,6 @@
         </div>
       </div>
 
-      <!-- Tarjeta 2: Barras de ocupación -->
       <div class="geo-card-premium">
         <div class="card-header">
           <h2>Ocupación por Sector</h2>
@@ -206,7 +176,6 @@
             <strong class="visitor-count">{{ point.totalVisitantes }}</strong>
           </div>
 
-          <!-- Barra sutil inferior -->
           <div class="mini-progress-edge" 
                [style.width.%]="point.porcentajeOcupacion" 
                [style.background-color]="getProgressBarColor(point.porcentajeOcupacion, point)"></div>
@@ -214,4 +183,13 @@
       }
     </div>
   </div>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="fab-notifications">
+    <ion-fab-button (click)="openNotifications()">
+      <ion-icon name="notifications-outline"></ion-icon>
+      @if (unreadNotificationsCount() > 0) {
+        <ion-badge color="danger" class="notif-badge-fab">{{ unreadNotificationsCount() }}</ion-badge>
+      }
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

@@ -2,8 +2,7 @@ import { Component, OnInit, OnDestroy, inject, signal, ViewChild, ElementRef } f
 import { DatePipe, NgClass, UpperCasePipe } from '@angular/common';
 
 import { 
-  IonHeader, IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, 
-  IonButton, IonContent, IonList, IonItem, IonLabel, IonBadge,
+  IonIcon, IonButton, IonContent, IonList, IonItem, IonLabel, IonBadge,
   IonSpinner, IonRefresher, IonRefresherContent, IonFab, IonFabButton, NavController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -19,16 +18,19 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import * as tf from '@tensorflow/tfjs';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
 
+
+import { HeaderComponent } from '../../header/header.component';
+
 @Component({
   selector: 'app-monitoreo',
   templateUrl: './monitoreo.page.html',
   styleUrls: ['./monitoreo.page.scss'],
   standalone: true,
   imports: [
-    IonHeader, IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, 
-    IonButton, IonBadge, IonContent, IonRefresher, IonRefresherContent, 
-    IonFab, IonFabButton, IonSpinner,
-    DatePipe, NgClass, UpperCasePipe
+    IonIcon, IonButton, IonBadge, IonContent, IonRefresher, IonRefresherContent, 
+    IonFab, IonFabButton, IonSpinner, IonList, IonItem, IonLabel,
+    DatePipe, NgClass, UpperCasePipe,
+    HeaderComponent // Componente reutilizable agregado
   ]
 })
 export class MonitoreoPage implements OnInit, OnDestroy {

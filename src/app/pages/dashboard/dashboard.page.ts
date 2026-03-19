@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, AfterViewInit, inject, signal } from '@an
 import { DatePipe, DecimalPipe, NgClass } from '@angular/common';
 
 import { 
-  IonHeader, IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, 
+  IonHeader, IonToolbar, IonTitle, IonButtons, IonIcon, 
   IonButton, IonBadge, IonContent, IonSpinner, IonList, IonItem, 
   IonLabel, IonFab, IonFabButton, NavController, 
   ToastController, ModalController 
@@ -29,6 +29,8 @@ import {
 } from 'ng-apexcharts';
 import { Input } from '@angular/core';
 import * as L from 'leaflet';
+
+import { HeaderComponent } from '../../header/header.component';
 
 export interface DashboardLocation extends PuntoTuristico {
   totalVisitantes: number;
@@ -104,7 +106,6 @@ export class NotificationsModalComponent {
   }
 }
 
-// Definimos la interfaz para que TypeScript no se queje
 export type ChartOptions = {
   series: ApexNonAxisChartSeries;
   chart: ApexChart;
@@ -123,10 +124,10 @@ export type ChartOptions = {
   standalone: true,
   imports: [
     NgApexchartsModule,
-    IonHeader, IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, 
-    IonButton, IonBadge, IonContent, IonSpinner, IonFab, IonFabButton,
+    IonIcon, IonButton, IonBadge, IonContent, IonSpinner, IonFab, IonFabButton,
     IonList, IonItem, IonLabel,
-    DatePipe, DecimalPipe, NgClass
+    DatePipe, DecimalPipe, NgClass,
+    HeaderComponent
   ]
 })
 export class DashboardPage implements OnInit, OnDestroy, AfterViewInit {
@@ -135,7 +136,6 @@ export class DashboardPage implements OnInit, OnDestroy, AfterViewInit {
   private toastCtrl = inject(ToastController);
   private modalCtrl = inject(ModalController);
 
-  // Mapa Leaflet
   private map: L.Map | null = null;
   private mapMarkers: L.CircleMarker[] = [];
 
@@ -143,7 +143,6 @@ export class DashboardPage implements OnInit, OnDestroy, AfterViewInit {
   locations = signal<DashboardLocation[]>([]);
   notifications = signal<Notificacion[]>([]); 
   unreadNotificationsCount = signal(0);
-  userInitials = signal('??');
   timeFilter = signal('Hoy');
   selectedLocationId = signal<string | null>(null);
   insights = signal<DashboardInsight | null>(null);
@@ -207,7 +206,6 @@ export class DashboardPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   async ngOnInit() {
-    await this.loadUserProfile();
     await this.loadNotificaciones();
     await this.loadDashboardData();
     this.startAutoRefresh();
@@ -232,19 +230,6 @@ export class DashboardPage implements OnInit, OnDestroy, AfterViewInit {
 
   stopAutoRefresh() {
     if (this.refreshInterval) clearInterval(this.refreshInterval);
-  }
-
-  async loadUserProfile() {
-    try {
-      const user = this.firebaseSvc.currentUser;
-      if (user?.email) {
-        this.userInitials.set(user.email.substring(0, 2).toUpperCase());
-      } else {
-        this.userInitials.set('AD'); 
-      }
-    } catch (e) {
-      this.userInitials.set('US');
-    }
   }
 
   async loadNotificaciones() {
@@ -438,11 +423,6 @@ export class DashboardPage implements OnInit, OnDestroy, AfterViewInit {
     await modal.present();
     await modal.onDidDismiss();
     this.unreadNotificationsCount.set(0);
-  }
-
-  async goToProfile() {
-    await Haptics.impact({ style: ImpactStyle.Light });
-    this.navCtrl.navigateForward('/perfil');
   }
 
   async goToMonitoring() {

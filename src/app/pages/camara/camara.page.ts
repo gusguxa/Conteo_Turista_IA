@@ -3,9 +3,8 @@ import { UpperCasePipe, DecimalPipe, NgClass } from '@angular/common';
 
 import { FormsModule } from '@angular/forms';
 import {
-  IonHeader, IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, IonButton,
-  IonBadge, IonContent, IonRefresher, IonRefresherContent, IonFab,
-  IonFabButton, IonSkeletonText, NavController,
+  IonIcon, IonButton, IonBadge, IonContent, IonRefresher, 
+  IonRefresherContent, IonFab, IonFabButton, IonSkeletonText, NavController,
   ToastController, ModalController, Platform
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -23,6 +22,9 @@ import { NotificationsModalComponent } from '../dashboard/dashboard.page';
 import * as tf from '@tensorflow/tfjs';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
 
+// Nuestro nuevo Header
+import { HeaderComponent } from '../../header/header.component';
+
 @Component({
   selector: 'app-camara',
   templateUrl: './camara.page.html',
@@ -30,12 +32,11 @@ import * as cocoSsd from '@tensorflow-models/coco-ssd';
   standalone: true,
   imports: [
     FormsModule,
-    IonHeader, IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, IonButton,
-    IonBadge, IonContent, IonRefresher, IonRefresherContent, IonFab,
-    IonFabButton, IonSkeletonText,
-    UpperCasePipe, DecimalPipe, NgClass
+    IonIcon, IonButton, IonBadge, IonContent, IonRefresher, IonRefresherContent, 
+    IonFab, IonFabButton, IonSkeletonText,
+    UpperCasePipe, DecimalPipe, NgClass,
+    HeaderComponent
   ]
-
 })
 export class CamaraPage implements OnInit, OnDestroy {
   private firebaseSvc = inject(FirebaseService);
@@ -60,7 +61,6 @@ export class CamaraPage implements OnInit, OnDestroy {
   };
   private iceCandidateQueue: RTCIceCandidateInit[] = [];
 
-
   // Modelo IA
   private model!: cocoSsd.ObjectDetection;
   private animationFrameId!: number;
@@ -72,7 +72,6 @@ export class CamaraPage implements OnInit, OnDestroy {
   isDetecting = signal(false);
   locations = signal<PuntoTuristico[]>([]);
   selectedLocation = signal<PuntoTuristico | null>(null);
-  userInitials = signal('AD');
   iaAccuracy = signal('---');
   entradasActuales = signal(0);
   cargaActual = signal(0);
@@ -82,7 +81,7 @@ export class CamaraPage implements OnInit, OnDestroy {
   unreadNotificationsCount = signal<number>(0);
 
   // --- IA Adaptativa ---
-  confidenceThreshold = signal(0.5);   // Umbral que se calibra por ubicación
+  confidenceThreshold = signal(0.5);
   avgConfidence = signal(0);
   totalDetections = signal(0);
   correctionsPositive = signal(0);
@@ -93,7 +92,7 @@ export class CamaraPage implements OnInit, OnDestroy {
   // Tracking de personas entre frames
   private previousBlobs: { x: number; y: number; id: number; counted?: boolean }[] = [];
   private nextBlobId = 1;
-  private countedIds = new Set<number>(); // Cooldown: IDs ya contados
+  private countedIds = new Set<number>();
 
   constructor() {
     addIcons({
@@ -180,7 +179,6 @@ export class CamaraPage implements OnInit, OnDestroy {
 
   async onLocationChange(event: any) {
     await Haptics.impact({ style: ImpactStyle.Medium });
-    // Guardar calibración del punto anterior antes de cambiar
     await this.saveCalibration();
 
     const selectedId = event.target.value;
@@ -205,9 +203,7 @@ export class CamaraPage implements OnInit, OnDestroy {
       this.totalDetections.set(data.total_detecciones || 0);
       this.correctionsPositive.set(data.correcciones_positivas || 0);
       this.correctionsNegative.set(data.correcciones_negativas || 0);
-      console.log(`Calibración cargada para punto ${puntoId}: umbral=${data.umbral_confianza}`);
     } else {
-      // Valores por defecto para punto nuevo
       this.confidenceThreshold.set(0.5);
       this.avgConfidence.set(0);
       this.totalDetections.set(0);
@@ -215,7 +211,6 @@ export class CamaraPage implements OnInit, OnDestroy {
       this.correctionsNegative.set(0);
     }
 
-    // Auto-guardar calibración cada 60 segundos
     if (this.calibrationInterval) clearInterval(this.calibrationInterval);
     this.calibrationInterval = setInterval(() => this.saveCalibration(), 60000);
   }
@@ -233,33 +228,24 @@ export class CamaraPage implements OnInit, OnDestroy {
     });
   }
 
-  // Corrección manual del usuario
   async correctCount(delta: number) {
     await Haptics.impact({ style: ImpactStyle.Medium });
     if (delta > 0) {
       this.correctionsPositive.update(v => v + 1);
       this.entradasActuales.update(v => v + 1);
-      // Bajar umbral → más permisivo (detectó menos de lo real)
       this.confidenceThreshold.update(v => Math.max(0.2, v - 0.02));
       this.showToast('Corrección +1 aplicada. IA calibrada.', 'success');
     } else {
       this.correctionsNegative.update(v => v + 1);
       this.entradasActuales.update(v => Math.max(0, v - 1));
-      // Subir umbral → más estricto (detectó falsos positivos)
       this.confidenceThreshold.update(v => Math.min(0.9, v + 0.02));
       this.showToast('Corrección -1 aplicada. IA calibrada.', 'warning');
     }
 
-    // Registrar corrección en base de datos
     const loc = this.selectedLocation();
     if (loc) {
       this.firebaseSvc.registrarConteo(loc.id, delta > 0 ? 1 : 0, delta < 0 ? 1 : 0);
     }
-  }
-
-  async goToProfile() {
-    await Haptics.impact({ style: ImpactStyle.Light });
-    this.navCtrl.navigateForward('/perfil');
   }
 
   onVideoLoaded(event: any) {
@@ -332,19 +318,14 @@ export class CamaraPage implements OnInit, OnDestroy {
       if (!this.isDetecting()) return;
 
       if (video.readyState === 4) {
-        // Ajustar canvas al video
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
 
-        // Detección
         const predictions = await this.model.detect(video);
-        
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Procesar detecciones de personas
         const currentPeople = predictions.filter(p => p.class === 'person' && p.score > this.confidenceThreshold());
         
-        // Actualizar precisión mostrada
         if (currentPeople.length > 0) {
           const avgScore = currentPeople.reduce((acc, p) => acc + p.score, 0) / currentPeople.length;
           this.iaAccuracy.set(`${(avgScore * 100).toFixed(1)}%`);
@@ -359,15 +340,11 @@ export class CamaraPage implements OnInit, OnDestroy {
           const centerX = x + width / 2;
           const centerY = y + height / 2;
 
-          // Dibujar Bounding Box
           ctx.strokeStyle = '#22c55e';
           ctx.lineWidth = 3;
           ctx.strokeRect(x, y, width, height);
-          
-          // Dibujar esquinas (premium feel)
           this.drawCorners(ctx, x, y, width, height);
 
-          // Lógica básica de conteo por tracking (basado en centroides)
           let matchedId = -1;
           let minDist = 50;
 
@@ -387,7 +364,6 @@ export class CamaraPage implements OnInit, OnDestroy {
             currentBlobs.push({ x: centerX, y: centerY, id: matchedId, counted: old?.counted || false });
           }
 
-          // Si cruza el "umbral" imaginario (mitad de pantalla) y no ha sido contado
           const umbralY = canvas.height / 2;
           const blob = currentBlobs.find(b => b.id === matchedId);
           if (blob && !blob.counted && centerY > umbralY) {
@@ -400,8 +376,6 @@ export class CamaraPage implements OnInit, OnDestroy {
         });
 
         this.previousBlobs = currentBlobs;
-        
-        // Limpieza de cooldown (opcional)
         if (this.countedIds.size > 100) this.countedIds.clear();
       }
 
@@ -416,22 +390,18 @@ export class CamaraPage implements OnInit, OnDestroy {
     ctx.strokeStyle = '#22c55e';
     ctx.lineWidth = 5;
 
-    // Top Left
     ctx.beginPath();
     ctx.moveTo(x, y + lineLen); ctx.lineTo(x, y); ctx.lineTo(x + lineLen, y);
     ctx.stroke();
 
-    // Top Right
     ctx.beginPath();
     ctx.moveTo(x + w - lineLen, y); ctx.lineTo(x + w, y); ctx.lineTo(x + w, y + lineLen);
     ctx.stroke();
 
-    // Bottom Left
     ctx.beginPath();
     ctx.moveTo(x, y + h - lineLen); ctx.lineTo(x, y + h); ctx.lineTo(x + lineLen, y + h);
     ctx.stroke();
 
-    // Bottom Right
     ctx.beginPath();
     ctx.moveTo(x + w - lineLen, y + h); ctx.lineTo(x + w, y + h); ctx.lineTo(x + w, y + h - lineLen);
     ctx.stroke();
@@ -442,7 +412,6 @@ export class CamaraPage implements OnInit, OnDestroy {
     this.entradasActuales.update(v => v + 1);
     this.cargaActual.update(v => v + 1);
     
-    // Registrar en BD
     const loc = this.selectedLocation();
     if (loc) {
       this.firebaseSvc.registrarConteo(loc.id, 1, 0);
@@ -469,7 +438,6 @@ export class CamaraPage implements OnInit, OnDestroy {
       this.isStreaming.set(true);
       this.peerConnection = new RTCPeerConnection(this.iceServers);
 
-      // Add tracks
       this.stream.getTracks().forEach(track => {
         this.peerConnection?.addTrack(track, this.stream!);
       });

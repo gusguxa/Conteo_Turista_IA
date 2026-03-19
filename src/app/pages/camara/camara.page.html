@@ -1,30 +1,4 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar class="geo-toolbar">
-    <ion-buttons slot="start">
-      <ion-menu-button class="toolbar-menu-btn"></ion-menu-button>
-    </ion-buttons>
-
-    <ion-title>
-      <div class="header-logo">
-        <ion-icon name="videocam-outline"></ion-icon>
-        <div class="logo-text">
-          <strong>GEOTOURIST</strong>
-          <span>CÁMARA IA</span>
-        </div>
-      </div>
-    </ion-title>
-
-    <ion-buttons slot="end">
-      <ion-button class="notif-button" (click)="openNotifications()">
-        <ion-icon slot="icon-only" name="notifications-outline" class="notif-icon"></ion-icon>
-        @if (unreadNotificationsCount() > 0) {
-          <ion-badge color="danger" class="notif-badge">{{ unreadNotificationsCount() }}</ion-badge>
-        }
-      </ion-button>
-      <div class="user-avatar" (click)="goToProfile()" style="cursor: pointer;">{{ userInitials() }}</div>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<app-header title="CÁMARA IA"></app-header>
 
 <ion-content>
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
@@ -32,7 +6,6 @@
   </ion-refresher>
 
   <div class="responsive-container">
-    <!-- Header con selector -->
     <div class="page-header-aligned">
       <div class="title-block">
         <h1>Monitoreo IA en Vivo</h1>
@@ -59,7 +32,6 @@
     </div>
 
 
-    <!-- Vista de cámara directa -->
     <div class="camera-container">
       <div class="camera-outer-frame">
         @if (!isCameraReady()) {
@@ -71,7 +43,6 @@
                    (loadedmetadata)="onVideoLoaded($event)"></video>
             <canvas #canvasElement class="ai-canvas"></canvas>
 
-            <!-- Overlay superior -->
             <div class="overlay-top">
               <div class="rec-badge">
                 <span class="red-dot"></span>
@@ -87,7 +58,6 @@
               </div>
             </div>
 
-            <!-- Overlay inferior con stats -->
             <div class="overlay-bottom-modern">
               <div class="glass-stat">
                 <div class="icon-circle"><ion-icon name="log-in-outline"></ion-icon></div>
@@ -102,7 +72,6 @@
         }
       </div>
 
-      <!-- Indicador de umbral IA -->
       <div class="calibration-bar">
         <div class="calibration-info">
           <small>Umbral IA</small>
@@ -117,7 +86,6 @@
         </div>
       </div>
 
-      <!-- Corrección manual -->
       <div class="correction-section">
         <p>¿El conteo no es preciso? Ajústalo manualmente:</p>
         <div class="correction-buttons">
@@ -135,7 +103,6 @@
     </div>
   </div>
 
-  <!-- FAB Notificaciones -->
   <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="fab-notifications">
     <ion-fab-button (click)="openNotifications()">
       <ion-icon name="notifications-outline"></ion-icon>

@@ -1,0 +1,68 @@
+/* Color de fondo del header para igualar tu diseño oscuro */
+.custom-toolbar {
+  --background: #1a2035; /* Ajusta este hex si tu fondo oscuro es ligeramente distinto */
+  --min-height: 70px;
+  --padding-start: 10px;
+  --padding-end: 20px;
+}
+
+/* Sección del logo y título */
+.brand-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 5px;
+
+  .brand-icon {
+    font-size: 32px;
+    color: #4b8df8; /* Azul claro estilo Ionic/Neon */
+  }
+
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+
+    strong {
+      font-family: 'Inter', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+    }
+
+    span {
+      font-size: 11px;
+      color: #4b8df8; /* Azul claro del subtítulo */
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      display: block;
+      margin-top: 4px;
+    }
+  }
+}
+
+/* Círculo del perfil (Avatar) */
+.profile-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #5b9afe; /* Azul brillante */
+  color: #0f172a; /* Texto oscuro para contraste */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+  
+  /* Efecto de sombra brillante (Neon glow) */
+  box-shadow: 0 0 15px rgba(91, 154, 254, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:active {
+    transform: scale(0.95);
+    box-shadow: 0 0 5px rgba(91, 154, 254, 0.6);
+  }
+}

@@ -2,8 +2,7 @@ import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular
 import { DatePipe, UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
-  IonHeader, IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, 
-  IonButton, IonBadge, IonContent, IonRefresher, IonRefresherContent, 
+  IonIcon, IonButton, IonBadge, IonContent, IonRefresher, IonRefresherContent, 
   IonList, IonItem, IonLabel, IonSearchbar, IonSkeletonText,
   IonFab, IonFabButton, IonSpinner,
   NavController, ToastController, ModalController 
@@ -16,6 +15,7 @@ import {
 import { FirebaseService, PuntoTuristico, Notificacion } from '../../services/firebase.service';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { NotificationsModalComponent } from '../dashboard/dashboard.page';
+import { HeaderComponent } from '../../header/header.component';
 
 export interface HistoryRecord {
   id: string;
@@ -33,11 +33,10 @@ export interface HistoryRecord {
   standalone: true,
   imports: [
     FormsModule,
-    IonHeader, IonToolbar, IonTitle, IonButtons, IonMenuButton, IonIcon, 
-    IonButton, IonBadge, IonContent, IonRefresher, IonRefresherContent, 
-    IonFab, IonFabButton, IonSpinner,
-    IonList, IonItem, IonLabel, IonSearchbar, IonSkeletonText,
-    DatePipe, UpperCasePipe
+    IonIcon, IonButton, IonBadge, IonContent, IonRefresher, IonRefresherContent, 
+    IonFab, IonFabButton, IonSpinner, IonList, IonItem, IonLabel, IonSearchbar, IonSkeletonText,
+    DatePipe, UpperCasePipe,
+    HeaderComponent
   ]
 })
 export class HistorialPage implements OnInit, OnDestroy {
@@ -49,13 +48,11 @@ export class HistorialPage implements OnInit, OnDestroy {
   isLoading = signal(true);
   searchQuery = signal(''); 
   allRecords = signal<HistoryRecord[]>([]); 
-  userInitials = signal('ER');
   
   notifications = signal<Notificacion[]>([]);
   unreadNotificationsCount = signal(0);
   private unsubscribeNotifs: any;
   
-  // Lógica de búsqueda automática
   filteredRecords = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
     if (!query) return this.allRecords();
@@ -73,7 +70,6 @@ export class HistorialPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    await this.loadUserProfile();
     await this.loadHistory();
     this.loadNotificaciones();
     this.initRealtimeNotifications();
@@ -110,11 +106,6 @@ export class HistorialPage implements OnInit, OnDestroy {
     await modal.present();
     await modal.onDidDismiss();
     this.unreadNotificationsCount.set(0);
-  }
-
-  async loadUserProfile() {
-    const user = this.firebaseSvc.currentUser;
-    if (user?.email) this.userInitials.set(user.email.substring(0, 2).toUpperCase());
   }
 
   async loadHistory() {
@@ -184,10 +175,5 @@ export class HistorialPage implements OnInit, OnDestroy {
     link.href = URL.createObjectURL(blob);
     link.setAttribute('download', fileName);
     link.click();
-  }
-
-  async goToProfile() {
-    await Haptics.impact({ style: ImpactStyle.Light });
-    this.navCtrl.navigateForward('/perfil');
   }
 }

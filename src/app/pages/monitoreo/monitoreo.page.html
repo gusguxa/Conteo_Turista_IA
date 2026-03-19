@@ -1,28 +1,4 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar class="geo-toolbar">
-    <ion-buttons slot="start">
-      <ion-button (click)="goBack()">
-        <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-
-    <ion-title>
-      <div class="header-logo">
-        <ion-icon name="eye-outline"></ion-icon>
-        <div class="logo-text">
-          <strong>GEOTOURIST</strong>
-          <span>MONITOREO VIVO</span>
-        </div>
-      </div>
-    </ion-title>
-
-    <ion-buttons slot="end">
-      <ion-button (click)="loadSessions()">
-        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<app-header title="MONITOREO VIVO"></app-header>
 
 <ion-content color="light">
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
@@ -38,7 +14,6 @@
     </div>
 
     @if (selectedSessionId()) {
-      <!-- Vista Expandida de la Cámara Seleccionada -->
       <div class="live-monitor-container">
         <div class="monitor-frame">
           <video #remoteVideo [srcObject]="remoteStream()" autoplay playsinline class="remote-video" (loadedmetadata)="onVideoLoaded($event)"></video>
@@ -74,7 +49,6 @@
       </div>
     }
 
-    <!-- Lista de Cámaras Activas -->
     <div class="sessions-grid">
       <div class="grid-header">
         <h2>Cámaras Disponibles</h2>
