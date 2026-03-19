@@ -1,0 +1,74 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="geo-toolbar">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      <div class="header-logo">
+        <div class="logo-text">
+          <strong>MI PERFIL</strong>
+          <span>GEOTOURIST</span>
+        </div>
+      </div>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="profile-background">
+  <div class="responsive-container">
+    @if (isLoading()) {
+      <div class="loading-state">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
+    } @else {
+      <div class="profile-header">
+        <div class="avatar-large">
+          <ion-icon name="person-circle-outline"></ion-icon>
+        </div>
+        <h2>{{ userData()?.nombre_completo || 'Usuario' }}</h2>
+        <p>{{ userEmail() }}</p>
+      </div>
+
+      <div class="info-card">
+        <div class="card-header">
+          <h3>Datos Personales</h3>
+        </div>
+        
+        <div class="info-list">
+          <div class="info-item">
+            <div class="icon-box"><ion-icon name="person-circle-outline"></ion-icon></div>
+            <div class="info-text">
+              <label>NOMBRE COMPLETO</label>
+              <span>{{ userData()?.nombre_completo || 'No registrado' }}</span>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <div class="icon-box"><ion-icon name="call-outline"></ion-icon></div>
+            <div class="info-text">
+              <label>TELÉFONO</label>
+              <span>{{ userData()?.telefono || 'No registrado' }}</span>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="icon-box"><ion-icon name="calendar-outline"></ion-icon></div>
+            <div class="info-text">
+              <label>FECHA DE NACIMIENTO</label>
+              <span>{{ userData()?.fecha_nacimiento || 'No registrada' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-section">
+        <ion-button expand="block" class="logout-btn" (click)="cerrarSesion()">
+          <ion-icon slot="start" name="log-out-outline"></ion-icon>
+          Cerrar Sesión
+        </ion-button>
+      </div>
+    }
+  </div>
+</ion-content>

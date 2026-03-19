@@ -1,0 +1,155 @@
+.geo-toolbar {
+  --background: var(--app-card-bg);
+  --color: var(--ion-text-color);
+  --min-height: 64px;
+}
+
+.header-logo {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  ion-icon { font-size: 24px; color: var(--ion-color-secondary); }
+  .logo-text {
+    display: flex; flex-direction: column; line-height: 1.1; text-align: left;
+    strong { font-size: 16px; font-weight: 800; letter-spacing: -0.5px; }
+    span { font-size: 8px; color: var(--ion-color-secondary); font-weight: 700; letter-spacing: 1.5px; }
+  }
+}
+
+.title-block {
+  padding: 20px 15px;
+  h1 { font-size: 28px; font-weight: 800; margin: 0; color: var(--ion-text-color); }
+  p { font-size: 14px; color: var(--ion-color-step-600); margin: 4px 0 0; }
+}
+
+.responsive-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* MONITOR PRINCIPAL */
+.live-monitor-container {
+  padding: 0 15px 20px;
+  animation: fadeIn 0.4s ease;
+}
+
+.monitor-frame {
+  width: 100%; aspect-ratio: 16/9;
+  background: #000; border-radius: 20px;
+  position: relative; overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+
+  .remote-video { width: 100%; height: 100%; object-fit: cover; }
+  .ai-canvas {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  .monitor-overlay-top {
+    position: absolute; top: 12px; left: 12px; right: 12px;
+    display: flex; justify-content: space-between; align-items: center;
+
+    .live-badge {
+      background: rgba(var(--ion-color-danger-rgb), 0.85);
+      backdrop-filter: blur(8px); color: white;
+      padding: 6px 12px; border-radius: 10px;
+      font-size: 11px; font-weight: 800;
+      display: flex; align-items: center; gap: 6px;
+      
+      .pulsating-dot { 
+        width: 8px; height: 8px; background: white; border-radius: 50%; 
+        animation: pulse 1s infinite;
+      }
+    }
+
+    .ia-status-badge {
+      background: rgba(var(--ion-color-secondary-rgb), 0.85);
+      backdrop-filter: blur(8px); color: white;
+      padding: 6px 12px; border-radius: 10px;
+      font-size: 11px; font-weight: 800;
+      display: flex; align-items: center; gap: 6px;
+      
+      .ia-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; }
+    }
+  }
+
+  .monitor-overlay-bottom {
+    position: absolute; bottom: 12px; left: 12px; right: 12px;
+    .operator-info {
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
+      padding: 6px 12px; border-radius: 10px; color: white;
+      font-size: 11px; display: flex; align-items: center; gap: 6px;
+    }
+  }
+}
+
+/* GRID DE SESIONES */
+.sessions-grid {
+  padding: 0 15px 40px;
+  
+  .grid-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 15px;
+    h2 { font-size: 18px; font-weight: 700; margin: 0; }
+  }
+}
+
+.cards-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+}
+
+.monitor-card {
+  background: var(--app-card-bg);
+  border-radius: 18px; padding: 16px;
+  border: 1px solid var(--app-input-border);
+  box-shadow: var(--app-card-shadow);
+  display: flex; align-items: center; gap: 15px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  &:active { transform: scale(0.97); }
+  &.active-card { 
+    border-color: var(--ion-color-primary); 
+    background: rgba(var(--ion-color-primary-rgb), 0.05); 
+  }
+
+  .card-status {
+    width: 60px; height: 60px; background: #f8fafc;
+    border-radius: 14px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 800; color: #64748b;
+    gap: 4px;
+    .dot { width: 6px; height: 6px; background: #16a34a; border-radius: 50%; }
+  }
+
+  .card-content {
+    flex: 1;
+    h3 { margin: 0; font-size: 16px; font-weight: 700; }
+    p { margin: 2px 0; font-size: 12px; color: #64748b; }
+    small { font-size: 11px; color: #94a3b8; }
+  }
+
+  .card-action {
+    color: var(--ion-color-primary); font-size: 24px;
+  }
+}
+
+.loading-state, .empty-state {
+  text-align: center; padding: 60px 20px;
+  ion-icon { font-size: 64px; color: #cbd5e1; margin-bottom: 15px; }
+  h3 { font-size: 18px; font-weight: 700; margin: 0; }
+  p { color: #64748b; margin: 8px 0 20px; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

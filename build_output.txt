@@ -1,0 +1,8 @@
+﻿
+> conteoTurista@0.0.1 build
+> ng build
+
+[33mÔØ»[39m Building...
+[32mÔ£ö[39m Building...
+Application bundle generation failed. [42.106 seconds] - 2026-03-19T14:31:25.316Z
+

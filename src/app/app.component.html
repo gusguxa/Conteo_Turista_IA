@@ -1,0 +1,53 @@
+<ion-app>
+  <ion-menu contentId="main-content" type="overlay">
+    
+    <ion-header class="ion-no-border">
+      <div class="menu-brand-container">
+        <div class="brand-logo-wrapper">
+          <ion-icon [icon]="icons.peopleOutline"></ion-icon>
+          <div class="brand-text">
+            <strong>GEOTOURIST</strong>
+            <span>CONTADOR TURÍSTICO</span>
+          </div>
+        </div>
+      </div>
+    </ion-header>
+
+    <ion-content class="menu-content">
+      <ion-list lines="none" class="full-height-list">
+        <!-- Contenedor superior para agrupar ítems principales -->
+        <div class="top-items">
+          @for (p of appPages; track p.title) {
+            <ion-menu-toggle auto-hide="false">
+              <ion-item button (click)="navigate(p.url)" detail="false" class="nav-item">
+                <ion-icon slot="start" [icon]="p.icon"></ion-icon>
+                <ion-label>{{ p.title }}</ion-label>
+              </ion-item>
+            </ion-menu-toggle>
+          }
+        </div>
+
+        
+        <!-- Contenedor inferior para configuración y cierre -->
+        <div class="bottom-items">
+          <div class="menu-divider"></div>
+          
+          <ion-item lines="none" class="nav-item theme-item">
+            <ion-icon slot="start" [icon]="darkMode() ? icons.moonOutline : icons.sunnyOutline"></ion-icon>
+            <ion-label>Modo Oscuro</ion-label>
+            <ion-toggle slot="end" [checked]="darkMode()" (ionChange)="toggleTheme($event)"></ion-toggle>
+          </ion-item>
+
+          <ion-menu-toggle auto-hide="false">
+            <ion-item button (click)="logout()" detail="false" class="nav-item logout-item">
+              <ion-icon slot="start" [icon]="icons.logOutOutline"></ion-icon>
+              <ion-label>Cerrar Sesión</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+        </div>
+      </ion-list>
+    </ion-content>
+  </ion-menu>
+
+  <ion-router-outlet id="main-content"></ion-router-outlet>
+</ion-app>

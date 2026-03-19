@@ -1,0 +1,122 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="geo-toolbar">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
+    <ion-title>
+      <div class="header-logo">
+        <ion-icon name="eye-outline"></ion-icon>
+        <div class="logo-text">
+          <strong>GEOTOURIST</strong>
+          <span>MONITOREO VIVO</span>
+        </div>
+      </div>
+    </ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button (click)="loadSessions()">
+        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="responsive-container">
+    <div class="page-header">
+      <div class="title-block">
+        <h1>Centro de Control</h1>
+        <p>Observa todas las cámaras activas en tiempo real</p>
+      </div>
+    </div>
+
+    @if (selectedSessionId()) {
+      <!-- Vista Expandida de la Cámara Seleccionada -->
+      <div class="live-monitor-container">
+        <div class="monitor-frame">
+          <video #remoteVideo [srcObject]="remoteStream()" autoplay playsinline class="remote-video" (loadedmetadata)="onVideoLoaded($event)"></video>
+          <canvas #canvasElement class="ai-canvas"></canvas>
+
+          
+          <div class="monitor-overlay-top">
+            <div class="live-badge">
+              <span class="pulsating-dot"></span>
+              EN VIVO: {{ getActiveSession()?.nombre_punto }}
+            </div>
+
+            @if (isDetecting()) {
+              <div class="ia-status-badge">
+                <span class="ia-dot"></span>
+                IA ACTIVA
+              </div>
+            }
+
+            <ion-button fill="clear" color="light" (click)="closeConnection()">
+              <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
+            </ion-button>
+          </div>
+
+          <div class="monitor-overlay-bottom">
+            <div class="operator-info">
+              <ion-icon name="people"></ion-icon>
+              <span>Operador: {{ getActiveSession()?.email }}</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Lista de Cámaras Activas -->
+    <div class="sessions-grid">
+      <div class="grid-header">
+        <h2>Cámaras Disponibles</h2>
+        <ion-badge color="danger" mode="ios">{{ sessions().length }} ACTIVAS</ion-badge>
+      </div>
+
+      @if (isLoading()) {
+        <div class="loading-state">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Buscando transmisiones...</p>
+        </div>
+      } @else {
+        <div class="cards-layout">
+          @for (session of sessions(); track session.id) {
+            <div class="monitor-card" 
+                 [class.active-card]="selectedSessionId() === session.id"
+                 (click)="viewSession(session)">
+              <div class="card-status">
+                <span class="dot"></span>
+                LIVE
+              </div>
+              <div class="card-content">
+                <h3>{{ session.nombre_punto }}</h3>
+                <p>{{ session.email }}</p>
+                <small>{{ convertToDate(session.creado_at) | date:'shortTime' }}</small>
+              </div>
+              <div class="card-action">
+                <ion-icon name="eye-outline"></ion-icon>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-state">
+              <ion-icon name="videocam-outline"></ion-icon>
+              <h3>No hay cámaras activas</h3>
+              <p>Las transmisiones aparecerán aquí cuando un guardia active su cámara.</p>
+              <ion-button fill="outline" color="primary" (click)="loadSessions()">
+                Reintentar
+              </ion-button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</ion-content>

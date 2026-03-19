@@ -1,0 +1,217 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="geo-toolbar">
+    <ion-buttons slot="start">
+      <ion-menu-button class="toolbar-menu-btn"></ion-menu-button>
+    </ion-buttons>
+    
+    <ion-title>
+      <div class="header-logo">
+        <ion-icon name="analytics-outline"></ion-icon>
+        <div class="logo-text">
+          <strong>GEOTOURIST</strong>
+          <span>DASHBOARD</span>
+        </div>
+      </div>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openNotifications()">
+        <ion-icon slot="icon-only" name="notifications-outline" class="notif-icon"></ion-icon>
+        @if (unreadNotificationsCount() > 0) {
+          <ion-badge color="danger" class="notif-badge">{{ unreadNotificationsCount() }}</ion-badge>
+        }
+      </ion-button>
+      <div class="user-avatar" (click)="goToProfile()" style="cursor: pointer;">{{ userInitials() }}</div>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  <div class="responsive-container">
+    <div class="page-header">
+      <div class="title-block">
+        <h1>Análisis de Afluencia</h1>
+        <p>Estado de la red turística en tiempo real</p>
+      </div>
+    </div>
+
+    <!-- Acceso rápido a Monitoreo -->
+    <div class="live-status-card" (click)="goToMonitoring()">
+      <div class="live-info">
+        <ion-icon name="eye-outline" class="live-icon"></ion-icon>
+        <div class="live-text">
+          <strong>Monitoreo en Vivo</strong>
+          <p>Ver transmisiones de cámaras activas</p>
+        </div>
+      </div>
+      <div class="live-badge-premium">
+        <span class="pulsating-dot"></span>
+        LIVE
+      </div>
+      <ion-icon name="chevron-forward-outline" class="arrow-icon"></ion-icon>
+    </div>
+
+
+    <!-- Sección de Insights Inteligentes -->
+    @if (insights()) {
+      <div class="insights-container">
+        <div class="insight-card-main">
+          <div class="insight-header">
+            <div class="insight-header-top">
+              <h3>{{ activeInsightTitle }}</h3>
+              @if (selectedLocationId()) {
+                <ion-button fill="clear" size="small" class="reset-filter-btn" (click)="clearSelection()">
+                  Restablecer
+                  <ion-icon slot="end" name="close-circle-outline"></ion-icon>
+                </ion-button>
+              }
+            </div>
+          </div>
+          <div class="insight-grid">
+            <div class="insight-item">
+              <div class="insight-icon-box">
+                <ion-icon name="calendar-outline"></ion-icon>
+              </div>
+              <div class="insight-info">
+                <small>Día más concurrido</small>
+                <strong>{{ insights()?.bestDay }}</strong>
+              </div>
+            </div>
+            <div class="insight-item">
+              <div class="insight-icon-box">
+                <ion-icon name="time-outline"></ion-icon>
+              </div>
+              <div class="insight-info">
+                <small>Hora Pico Detec.</small>
+                <strong>{{ insights()?.peakHour }}</strong>
+              </div>
+            </div>
+            <div class="insight-item">
+              <div class="insight-icon-box">
+                <ion-icon name="people-outline"></ion-icon>
+              </div>
+              <div class="insight-info">
+                <small>Total de Visitas</small>
+                <strong>{{ insights()?.totalPeriod }}</strong>
+              </div>
+            </div>
+          </div>
+          <div class="insight-footer">
+            <p>{{ insights()?.message }}</p>
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="time-filter-glass">
+      <button class="time-pill" [class.active]="timeFilter() === 'Hoy'" (click)="setFilter('Hoy')">Hoy</button>
+      <button class="time-pill" [class.active]="timeFilter() === 'Semana'" (click)="setFilter('Semana')">Semana</button>
+      <button class="time-pill" [class.active]="timeFilter() === 'Mes'" (click)="setFilter('Mes')">Mes</button>
+    </div>
+
+    <!-- Mapa de Ocupación -->
+    <div class="geo-card-premium map-card">
+      <div class="card-header">
+        <h2>Mapa de Ocupación</h2>
+        <ion-icon name="map-outline"></ion-icon>
+      </div>
+      <div class="map-legend">
+        <span class="legend-item"><span class="legend-dot green"></span> &lt;50%</span>
+        <span class="legend-item"><span class="legend-dot yellow"></span> 50-85%</span>
+        <span class="legend-item"><span class="legend-dot red"></span> &gt;85%</span>
+      </div>
+      <div id="occupancy-map" class="map-container"></div>
+    </div>
+
+    <div class="desktop-grid">
+      <!-- Tarjeta 1: Gráfico -->
+      <div class="geo-card-premium">
+        <div class="card-header">
+          <h2>Distribución de Flujo</h2>
+          <ion-icon name="pie-chart-outline"></ion-icon>
+        </div>
+        <div class="chart-main-container">
+          @if (chartOptions.series && chartOptions.series.length > 0) {
+            <div class="chart-wrapper inverse-chart">
+              <apx-chart
+                [series]="chartOptions.series!"
+                [labels]="chartOptions.labels!"
+                [chart]="chartOptions.chart!"
+                [plotOptions]="chartOptions.plotOptions!"
+                [colors]="chartOptions.colors!" 
+                [dataLabels]="chartOptions.dataLabels!"
+                [legend]="chartOptions.legend!"
+                [stroke]="chartOptions.stroke!"
+              ></apx-chart>
+            </div>
+          } @else {
+            <div class="chart-loading">
+              <ion-spinner name="crescent"></ion-spinner>
+              <p>Cargando datos del gráfico...</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Tarjeta 2: Barras de ocupación -->
+      <div class="geo-card-premium">
+        <div class="card-header">
+          <h2>Ocupación por Sector</h2>
+          <ion-icon name="stats-chart-outline"></ion-icon>
+        </div>
+        <div class="capacity-stack">
+          @for (point of locations(); track point.id) {
+            <div class="capacity-row" 
+                 [class.selected-row]="selectedLocationId() === point.id"
+                 [class.over-capacity-row]="point.porcentajeOcupacion >= 90"
+                 (click)="selectLocation(point.id)">
+              <div class="cap-labels">
+                <div class="cap-name-icon">
+                  <div class="identity-dot" [style.background-color]="point.identityColor"></div>
+                  <strong>{{ point.nombre }}</strong>
+                  @if (point.porcentajeOcupacion >= 90) {
+                    <ion-icon name="alert-circle-outline" color="danger" class="alert-mini-icon"></ion-icon>
+                  }
+                </div>
+                <span class="pct-badge" [class.danger-text]="point.porcentajeOcupacion >= 90">{{ point.porcentajeOcupacion }}%</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" 
+                     [style.width.%]="point.porcentajeOcupacion"
+                     [style.background-color]="getProgressBarColor(point.porcentajeOcupacion, point)">
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="visitor-grid">
+      @for (point of locations(); track point.id) {
+        <div class="geo-card-mini-premium" 
+             [class.selected-card]="selectedLocationId() === point.id"
+             [class.alert-glow]="point.porcentajeOcupacion >= 90"
+             [style.border-top-color]="point.identityColor"
+             (click)="selectLocation(point.id)">
+          <div class="mini-icon-bg">
+            <ion-icon name="people" [style.color]="point.identityColor"></ion-icon>
+          </div>
+          <div class="mini-header">
+            <span class="occupancy-badge" [style.background-color]="point.identityColor + '15'" [style.color]="point.identityColor">
+              {{ point.porcentajeOcupacion }}% Ocup.
+            </span>
+          </div>
+          <div class="mini-content">
+            <small>{{ point.nombre }}</small>
+            <strong class="visitor-count">{{ point.totalVisitantes }}</strong>
+          </div>
+
+          <!-- Barra sutil inferior -->
+          <div class="mini-progress-edge" 
+               [style.width.%]="point.porcentajeOcupacion" 
+               [style.background-color]="getProgressBarColor(point.porcentajeOcupacion, point)"></div>
+        </div>
+      }
+    </div>
+  </div>
+</ion-content>

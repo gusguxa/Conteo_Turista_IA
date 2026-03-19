@@ -1,0 +1,75 @@
+:root {
+  /** 
+   * PREMIUM DESIGN SYSTEM (High Contrast / Web-Responsive) 
+   **/
+  
+  /* Primary Action Color: Deep Emerald Green (High contrast against white) */
+  --ion-color-primary: #059669;
+  --ion-color-primary-rgb: 5,150,105;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255,255,255;
+  --ion-color-primary-shade: #047857;
+  --ion-color-primary-tint: #10b981;
+
+  /* Secondary: Dark Slate for Accents */
+  --ion-color-secondary: #334155;
+  --ion-color-secondary-rgb: 51,65,85;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255,255,255;
+  --ion-color-secondary-shade: #1e293b;
+  --ion-color-secondary-tint: #475569;
+
+  /* Tertiary: Soft Emerald Accent */
+  --ion-color-tertiary: #d1fae5;
+  --ion-color-tertiary-rgb: 209,250,229;
+  --ion-color-tertiary-contrast: #064e3b;
+  --ion-color-tertiary-contrast-rgb: 6,78,59;
+  --ion-color-tertiary-shade: #a7f3d0;
+  --ion-color-tertiary-tint: #ecfdf5;
+
+  /* Backgrounds: Off-white for warmth and contrast vs pure white cards */
+  --ion-background-color: #f8fafc;
+  --ion-background-color-rgb: 248,250,252;
+  
+  /* Texts: High Contrast Dark Charcoal */
+  --ion-text-color: #0f172a;
+  --ion-text-color-rgb: 15,23,42;
+
+  /* Custom App Variables */
+  --app-card-bg: #ffffff;
+  --app-card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --app-card-radius: 16px;
+  
+  --app-input-bg: #f1f5f9;
+  --app-input-border: #cbd5e1;
+  --app-input-focus: #10b981;
+  --app-hover-bg: rgba(15, 23, 42, 0.04); /* Gris muy sutil para modo claro */
+}
+
+/* Clase para forzar modo oscuro manualmente */
+.ion-palette-dark {
+  --app-card-bg: #1e293b; /* Slate 800 */
+  --app-input-bg: #0f172a; /* Slate 900 */
+  --app-input-border: #334155; /* Slate 700 */
+  --ion-background-color: #0f172a; /* Slate 900 */
+  --ion-text-color: #f8fafc; /* Slate 50 */
+  --ion-color-secondary-tint: #94a3b8; /* Slate 400 */
+  --app-hover-bg: rgba(255, 255, 255, 0.08); /* Blanco traslúcido para modo oscuro */
+}
+
+/* 
+  Global Utility Classes for Responsive Web Design 
+*/
+.responsive-container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 16px;
+  max-width: 600px; /* Target para móviles y tablets pequeños */
+}
+
+@media (min-width: 768px) {
+  .responsive-container {
+    padding: 32px;
+    max-width: 1200px; /* Para pantallas de Laptop / PC */
+  }
+}

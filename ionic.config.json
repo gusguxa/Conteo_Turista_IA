@@ -1,0 +1,7 @@
+{
+  "name": "conteoTurista",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

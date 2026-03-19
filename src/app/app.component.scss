@@ -1,0 +1,119 @@
+/* Variables de color GeoTourist */
+$emerald-brand: #006b44;
+$navy-brand: #0f172a;
+$gray-light: #f8fafc;
+
+.menu-content {
+  --background: var(--ion-background-color, #ffffff);
+}
+
+/* Cabecera del Menú */
+.menu-brand-container {
+  padding: 35px 20px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--ion-color-step-100, #f1f5f9);
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+
+  .brand-logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    ion-icon {
+      font-size: 36px;
+      color: var(--ion-color-primary, #006b44);
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+
+      strong {
+        font-family: 'Inter', sans-serif;
+        font-size: 22px;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: 0.5px;
+      }
+
+      span {
+        font-size: 11px;
+        color: var(--ion-color-primary, #006b44);
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        display: block;
+        margin-top: 6px;
+      }
+    }
+  }
+}
+
+/* Arreglo para que el texto no se encime (Error image_c3b97d.png) */
+.nav-item {
+  --background: transparent;
+  --padding-start: 20px; /* Suficiente espacio para que no se encime el texto */
+  --inner-padding-end: 20px;
+  --border-radius: 14px;
+  margin: 8px 15px;
+  --min-height: 54px;
+  transition: all 0.2s ease;
+
+  ion-icon {
+    color: var(--ion-color-medium, #64748b);
+    font-size: 22px;
+    /* Quitamos márgenes extra que puedan mover el icono */
+    margin: 0; 
+  }
+
+  ion-label {
+    font-weight: 600;
+    color: var(--ion-text-color, #334155);
+    font-size: 15px;
+    margin-left: 15px !important; /* Fuerza la separación entre icono y texto */
+  }
+
+  /* Efecto moderno estilo botón translúcido */
+  &:hover, &.selected {
+    --background: rgba(255, 255, 255, 0.1); /* Sombreado translúcido neutro compatible en claro y oscuro */
+    /* Mantenemos el color igual para no dar saltos al pasar el ratón */
+  }
+}
+
+.menu-divider {
+  height: 1px;
+  background: var(--ion-color-step-100, #f1f5f9);
+  margin: 15px 25px;
+}
+
+.logout-item {
+  ion-icon, ion-label {
+    color: var(--ion-color-danger, #ef4444) !important;
+  }
+  &:hover {
+    --background: rgba(239, 68, 68, 0.1);
+  }
+}
+
+/* Clases Flexbox para el menú ocupando el 100% de altura */
+.full-height-list {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.top-items {
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* Empuja bottom-items hacia abajo */
+}
+
+/* Espaciado extra para que el botón cerrar sesión no quede pegado al borde del teléfono */
+.bottom-items {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 20px;
+}
