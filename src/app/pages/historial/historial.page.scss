@@ -1,437 +1,203 @@
-/* --- 1. CONFIGURACIÓN DE VARIABLES --- */
+/* --- 1. VARIABLES DINÁMICAS (Modo Claro) --- */
 :host {
-  --primary: #3b82f6;
-  --success: #10b981;
+  --primary: #3b82f6; 
+  --success: #10b981; 
+  
+  --bg-page: #f8fafc;
   --bg-card: #ffffff;
-  --border-color: #e2e8f0;
   --text-main: #1e293b;
   --text-muted: #64748b;
-  --app-card-radius: 20px;
+  --border-color: #e2e8f0;
+  --bg-hover: #f1f5f9;
+  --bg-badge: #f8fafc;
+}
+
+/* --- 2. EL MODO OSCURO "A PRUEBA DE BALAS" --- */
+/* Forzamos a que Angular busque la clase en html o body y usamos !important */
+:host-context(html.ion-palette-dark),
+:host-context(body.ion-palette-dark),
+:host-context(.ion-palette-dark) {
+  --bg-page: #0c1220 !important; 
+  --bg-card: #0f172a !important; 
+  --text-main: #f8fafc !important; 
+  --text-muted: #94a3b8 !important; 
+  --border-color: #0c1220 !important; 
+  --bg-hover: #1e293b !important; 
+  --bg-badge: #0f172a !important;
+}
+
+/* Respaldo por si Ionic usa preferencias directas del sistema */
+@media (prefers-color-scheme: dark) {
+  :host {
+    --bg-page: #000000 !important; 
+    --bg-card: #0f172a !important; 
+    --text-main: #f8fafc !important; 
+    --text-muted: #94a3b8 !important; 
+    --border-color: #1e293b !important; 
+    --bg-hover: #1e293b !important; 
+    --bg-badge: #0f172a !important;
+  }
+}
+
+/* --- FORZAR VARIABLES EN EL FONDO --- */
+ion-content {
+  /* Usamos la variable nativa de Ionic también, para doble seguridad */
+  --background: var(--bg-page) !important;
+  --ion-background-color: var(--bg-page) !important;
 }
 
 .responsive-container {
   padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
+  background: var(--bg-page) !important;
+  background-color: var(--bg-page) !important;
+  min-height: 100vh;
 }
 
-/* --- 2. HEADER Y BOTONES --- */
+/* --- 3. HEADER Y BOTONES --- */
 .page-header-aligned {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-  gap: 20px;
+  margin-bottom: 30px;
 
   .title-block h1 {
-    font-size: 26px;
+    font-size: 28px;
     font-weight: 800;
-    color: var(--text-main);
+    color: var(--text-main); 
     margin: 0;
-    letter-spacing: -0.5px;
   }
 
   .action-buttons {
     display: flex;
     gap: 12px;
+    
     button {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 14px;
-      cursor: pointer;
-      transition: 0.3s;
-      
-      &.btn-outline {
-        background: white;
-        border: 2px solid var(--border-color);
-        color: var(--text-muted);
-      }
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 18px; border-radius: 10px;
+      font-weight: 700; font-size: 14px; cursor: pointer;
+    }
 
-      &.btn-solid {
-        background: var(--success);
-        color: white;
-        border: none;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
-      }
-      
-      &:hover { transform: translateY(-2px); }
+    .btn-outline {
+      background: var(--bg-card); 
+      border: 1px solid var(--border-color);
+      color: var(--text-main); 
+      &:hover { background: var(--bg-hover); }
+    }
+    
+    .btn-solid {
+      background: var(--success);
+      color: #ffffff;
+      border: none;
+      &:hover { opacity: 0.9; }
     }
   }
 }
 
-/* --- 3. NUEVO: BARRA DE FILTROS DE TIEMPO --- 
-   Añade estas clases en tu HTML arriba de la search-bar para que funcione */
-.time-filters {
-  display: flex;
-  background: #e2e8f0;
-  padding: 4px;
-  border-radius: 14px;
-  margin-bottom: 20px;
-  width: fit-content;
-
-  .filter-btn {
-    padding: 8px 24px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: none;
-    background: transparent;
-
-    &.active {
-      background: white;
-      color: var(--primary);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-
-    &:hover:not(.active) {
-      color: var(--text-main);
-    }
-  }
-}
-
-/* --- 4. BARRA DE BÚSQUEDA --- */
+/* --- 4. BUSCADOR --- */
 .search-bar {
   display: flex;
   align-items: center;
-  background: white;
+  background: var(--bg-card); 
   padding: 0 20px;
-  border-radius: 16px;
-  border: 2px solid var(--border-color);
-  height: 60px;
-  margin-bottom: 30px;
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  height: 55px;
+  margin-bottom: 40px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 
-  ion-icon { color: var(--text-muted); font-size: 22px; }
+  ion-icon { color: var(--text-muted); font-size: 20px; }
+  
   input {
-    border: none; outline: none; width: 100%;
-    margin-left: 12px; font-size: 16px; color: var(--text-main);
+    background: transparent;
+    border: none;
+    color: var(--text-main); 
+    width: 100%;
+    margin-left: 10px;
+    outline: none;
+    font-size: 16px;
+    &::placeholder { color: var(--text-muted); }
   }
 }
 
-/* --- 5. LA TABLA (CARDS) --- */
+/* --- 5. TABLA / TARJETAS --- */
 .data-table {
   .table-header-grid {
     display: grid;
-    grid-template-columns: 2fr 1.5fr 1fr 60px;
-    padding: 0 24px 12px;
+    grid-template-columns: 2fr 1.5fr 1fr 80px;
+    padding: 0 25px 15px;
     gap: 15px;
     div {
-      font-size: 11px; font-weight: 800; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 1px;
+      color: var(--text-muted);
+      font-size: 11px; font-weight: 800; text-transform: uppercase;
     }
-    .col-afluencia { text-align: center; }
   }
 
   .table-body {
-    display: flex; flex-direction: column; gap: 12px;
-  }
-
-  .table-row-grid {
-    display: grid;
-    grid-template-columns: 2fr 1.5fr 1fr 60px;
-    background: white;
-    padding: 18px 24px;
-    border-radius: var(--app-card-radius);
-    align-items: center;
-    gap: 15px;
-    border: 1px solid #f1f5f9;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-    transition: all 0.3s ease;
-    border-left: 6px solid var(--primary);
-
-    &:hover {
-      transform: translateX(8px);
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-      border-left-color: var(--success);
-    }
-  }
-}
-
-/* --- 6. CELDAS --- */
-.col-punto {
-  .text-wrapper {
-    strong { font-size: 17px; color: var(--text-main); font-weight: 700; display: block; }
-    .location-tag {
-      font-size: 10px; background: #eff6ff; color: var(--primary);
-      padding: 4px 10px; border-radius: 8px; font-weight: 800;
-      text-transform: uppercase; margin-top: 6px; display: inline-block;
-    }
-  }
-}
-
-.col-fecha {
-  .text-wrapper {
-    strong { font-size: 14px; color: #475569; font-weight: 600; }
-    .time-tag {
-      font-size: 11px; color: var(--text-muted); background: #f8fafc;
-      padding: 2px 8px; border-radius: 6px; border: 1px solid var(--border-color);
-      display: inline-block; margin-top: 4px;
-    }
-  }
-}
-
-.col-afluencia {
-  text-align: center;
-  .badge-number {
-    font-size: 20px; font-weight: 800; color: var(--text-main);
-    background: #f8fafc; width: 50px; height: 50px;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 14px; margin: 0 auto; border: 2px solid var(--border-color);
-  }
-}
-
-.col-accion {
-  display: flex; justify-content: flex-end;
-  .btn-download {
-    background: #f1f5f9; border: none; border-radius: 12px;
-    width: 44px; height: 44px; color: var(--text-muted);
-    cursor: pointer; transition: 0.2s;
-    &:hover { background: var(--text-main); color: white; }
-  }
-}
-
-/* --- 7. RESPONSIVE --- */
-@media (max-width: 768px) {
-  .data-table .table-header-grid { display: none; }
-  .data-table .table-row-grid {
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas: "punto afluencia" "fecha accion";
-    padding: 20px;
-  }
-  .col-punto { grid-area: punto; }
-  .col-fecha { grid-area: fecha; }
-  .col-afluencia { grid-area: afluencia; text-align: right; .badge-number { margin-right: 0; } }
-  .col-accion { grid-area: accion; }
-  .time-filters { width: 100%; justify-content: space-between; }
-}
-
-/* --- 8. FAB --- */
-.fab-notifications {
-  margin-bottom: 20px;
-  margin-right: 20px;
-  ion-fab-button { --background: #0f172a; }
-}/* --- 1. CONFIGURACIÓN DE VARIABLES --- */
-:host {
-  --primary: #3b82f6;
-  --success: #10b981;
-  --bg-card: #ffffff;
-  --border-color: #e2e8f0;
-  --text-main: #1e293b;
-  --text-muted: #64748b;
-  --app-card-radius: 20px;
-}
-
-.responsive-container {
-  padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-/* --- 2. HEADER Y BOTONES --- */
-.page-header-aligned {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  gap: 20px;
-
-  .title-block h1 {
-    font-size: 26px;
-    font-weight: 800;
-    color: var(--text-main);
-    margin: 0;
-    letter-spacing: -0.5px;
-  }
-
-  .action-buttons {
     display: flex;
-    gap: 12px;
-    button {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 14px;
-      cursor: pointer;
-      transition: 0.3s;
-      
-      &.btn-outline {
-        background: white;
-        border: 2px solid var(--border-color);
-        color: var(--text-muted);
-      }
-
-      &.btn-solid {
-        background: var(--success);
-        color: white;
-        border: none;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
-      }
-      
-      &:hover { transform: translateY(-2px); }
-    }
-  }
-}
-
-/* --- 3. NUEVO: BARRA DE FILTROS DE TIEMPO --- 
-   Añade estas clases en tu HTML arriba de la search-bar para que funcione */
-.time-filters {
-  display: flex;
-  background: #e2e8f0;
-  padding: 4px;
-  border-radius: 14px;
-  margin-bottom: 20px;
-  width: fit-content;
-
-  .filter-btn {
-    padding: 8px 24px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: none;
-    background: transparent;
-
-    &.active {
-      background: white;
-      color: var(--primary);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-
-    &:hover:not(.active) {
-      color: var(--text-main);
-    }
-  }
-}
-
-/* --- 4. BARRA DE BÚSQUEDA --- */
-.search-bar {
-  display: flex;
-  align-items: center;
-  background: white;
-  padding: 0 20px;
-  border-radius: 16px;
-  border: 2px solid var(--border-color);
-  height: 60px;
-  margin-bottom: 30px;
-
-  ion-icon { color: var(--text-muted); font-size: 22px; }
-  input {
-    border: none; outline: none; width: 100%;
-    margin-left: 12px; font-size: 16px; color: var(--text-main);
-  }
-}
-
-/* --- 5. LA TABLA (CARDS) --- */
-.data-table {
-  .table-header-grid {
-    display: grid;
-    grid-template-columns: 2fr 1.5fr 1fr 60px;
-    padding: 0 24px 12px;
+    flex-direction: column;
     gap: 15px;
-    div {
-      font-size: 11px; font-weight: 800; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 1px;
-    }
-    .col-afluencia { text-align: center; }
-  }
-
-  .table-body {
-    display: flex; flex-direction: column; gap: 12px;
   }
 
   .table-row-grid {
     display: grid;
-    grid-template-columns: 2fr 1.5fr 1fr 60px;
-    background: white;
-    padding: 18px 24px;
-    border-radius: var(--app-card-radius);
+    grid-template-columns: 2fr 1.5fr 1fr 80px;
+    background: var(--bg-card); 
+    padding: 20px 25px;
+    border-radius: 16px;
     align-items: center;
     gap: 15px;
-    border: 1px solid #f1f5f9;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
     border-left: 6px solid var(--primary);
+    transition: all 0.2s ease;
 
     &:hover {
-      transform: translateX(8px);
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-      border-left-color: var(--success);
+      transform: translateY(-2px);
+      background: var(--bg-hover);
     }
+
+    strong { color: var(--text-main); }
+    .col-fecha { color: var(--text-main); }
   }
 }
 
-/* --- 6. CELDAS --- */
-.col-punto {
-  .text-wrapper {
-    strong { font-size: 17px; color: var(--text-main); font-weight: 700; display: block; }
-    .location-tag {
-      font-size: 10px; background: #eff6ff; color: var(--primary);
-      padding: 4px 10px; border-radius: 8px; font-weight: 800;
-      text-transform: uppercase; margin-top: 6px; display: inline-block;
-    }
-  }
+/* --- 6. DETALLES --- */
+.col-punto .location-tag {
+  color: var(--primary);
+  background: rgba(59, 130, 246, 0.12);
+  padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 800;
 }
 
-.col-fecha {
-  .text-wrapper {
-    strong { font-size: 14px; color: #475569; font-weight: 600; }
-    .time-tag {
-      font-size: 11px; color: var(--text-muted); background: #f8fafc;
-      padding: 2px 8px; border-radius: 6px; border: 1px solid var(--border-color);
-      display: inline-block; margin-top: 4px;
-    }
-  }
+.col-fecha .time-tag {
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  padding: 4px 10px; border-radius: 6px; font-size: 12px;
 }
 
-.col-afluencia {
-  text-align: center;
-  .badge-number {
-    font-size: 20px; font-weight: 800; color: var(--text-main);
-    background: #f8fafc; width: 50px; height: 50px;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 14px; margin: 0 auto; border: 2px solid var(--border-color);
-  }
+.col-afluencia .badge-number {
+  background: var(--bg-badge);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  width: 45px; height: 45px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px; font-size: 18px; font-weight: 800;
 }
 
 .col-accion {
-  display: flex; justify-content: flex-end;
   .btn-download {
-    background: #f1f5f9; border: none; border-radius: 12px;
-    width: 44px; height: 44px; color: var(--text-muted);
-    cursor: pointer; transition: 0.2s;
-    &:hover { background: var(--text-main); color: white; }
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  
+  ion-icon {
+    color: var(--text-muted);
+    font-size: 20px;
+    &:hover { color: var(--primary); }
   }
 }
 
-/* --- 7. RESPONSIVE --- */
-@media (max-width: 768px) {
-  .data-table .table-header-grid { display: none; }
-  .data-table .table-row-grid {
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas: "punto afluencia" "fecha accion";
-    padding: 20px;
-  }
-  .col-punto { grid-area: punto; }
-  .col-fecha { grid-area: fecha; }
-  .col-afluencia { grid-area: afluencia; text-align: right; .badge-number { margin-right: 0; } }
-  .col-accion { grid-area: accion; }
-  .time-filters { width: 100%; justify-content: space-between; }
-}
-
-/* --- 8. FAB --- */
-.fab-notifications {
-  margin-bottom: 20px;
-  margin-right: 20px;
-  ion-fab-button { --background: #0f172a; }
+/* --- 7. FAB --- */
+.fab-notifications ion-fab-button {
+  --background: #5086ff;
+  --color: #ffffff;
 }
