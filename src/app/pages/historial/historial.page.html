@@ -6,19 +6,36 @@
       <div class="title-block">
         <h1>Archivo de datos</h1>
       </div>
-      <div class="action-buttons">
-        <button class="btn-outline" (click)="exportGlobalCSV()">
-          <ion-icon name="download-outline"></ion-icon> Excel Global
-        </button>
-        <button class="btn-solid">
-          <ion-icon name="document-text-outline"></ion-icon> Reporte
-        </button>
-      </div>
+      
     </div>
 
-    <div class="search-bar">
-      <ion-icon name="search-outline"></ion-icon>
-      <input type="text" placeholder="Buscar por punto de control" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+    <div class="punto-filter" style="margin: 15px 0; padding: 0 10px;">
+      <ion-item lines="full" color="light" style="border-radius: 8px;">
+        <ion-icon name="location-outline" slot="start" color="primary"></ion-icon>
+        <ion-select label="Punto de Control" placeholder="Selecciona un punto" [value]="selectedPunto()" (ionChange)="cambiarPunto($event)" interface="action-sheet">
+          <ion-select-option value="todos">Todos los puntos</ion-select-option>
+          @for (punto of puntosDeControl(); track punto.id) {
+            <ion-select-option [value]="punto.id">{{ punto.nombre }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+    </div>
+
+    <div class="period-filter" style="margin: 15px 0;">
+      <ion-segment [value]="filtroPeriodo()" (ionChange)="cambiarPeriodo($event)" mode="ios">
+        <ion-segment-button value="dia">
+          <ion-label>Día</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="semana">
+          <ion-label>Semana</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="mes">
+          <ion-label>Mes</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="año">
+          <ion-label>Año</ion-label>
+        </ion-segment-button>
+      </ion-segment>
     </div>
 
     <div class="data-table">
@@ -30,29 +47,39 @@
       </div>
 
       <div class="table-body">
-        @for (record of filteredRecords(); track record.id) {
-          <div class="table-row-grid">
-            <div class="col-punto">
-              <div class="text-wrapper">
-                <strong>{{ record.punto }}</strong>
-                <span class="location-tag">{{ record.ubicacion | uppercase }}</span>
-              </div>
-            </div>
-            <div class="col-fecha">
-              <div class="text-wrapper">
-                <strong>{{ record.fecha }}</strong>
-                <span class="time-tag">{{ record.hora }} HRS</span>
-              </div>
-            </div>
-            <div class="col-afluencia">
-              <div class="badge-number">{{ record.afluencia }}</div>
-            </div>
-            <div class="col-accion">
-              <button class="btn-download" (click)="exportRow(record)">
-                <ion-icon name="download-outline"></ion-icon>
-              </button>
-            </div>
+        @if (isLoading()) {
+          <div style="text-align: center; padding: 20px;">
+            <ion-spinner name="crescent"></ion-spinner>
           </div>
+        } @else if (displayRecords().length === 0) {
+          <div style="text-align: center; padding: 30px; color: var(--ion-color-medium);">
+            <p>No hay registros para los filtros seleccionados.</p>
+          </div>
+        } @else {
+          @for (record of displayRecords(); track record.id) {
+            <div class="table-row-grid">
+              <div class="col-punto">
+                <div class="text-wrapper">
+                  <strong>{{ record.punto }}</strong>
+                  <span class="location-tag">{{ record.ubicacion | uppercase }}</span>
+                </div>
+              </div>
+              <div class="col-fecha">
+                <div class="text-wrapper">
+                  <strong>{{ record.fecha }}</strong>
+                  <span class="time-tag">{{ record.hora }}</span>
+                </div>
+              </div>
+              <div class="col-afluencia">
+                <div class="badge-number">{{ record.afluencia }}</div>
+              </div>
+              <div class="col-accion">
+                <button class="btn-download" (click)="exportRow(record)">
+                  <ion-icon name="download-outline"></ion-icon>
+                </button>
+              </div>
+            </div>
+          }
         }
       </div>
     </div>

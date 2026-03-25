@@ -58,11 +58,9 @@ export interface SesionStreaming {
   activa: boolean;
 }
 
-
 @Injectable({
   providedIn: 'root'
 })
-
 export class FirebaseService {
   private auth = inject(Auth);
   private firestore = inject(Firestore);
@@ -90,7 +88,6 @@ export class FirebaseService {
     try {
       const result = await createUserWithEmailAndPassword(this.auth, email, pass);
       if (result.user) {
-        // Crear perfil en Firestore
         await setDoc(doc(this.firestore, 'perfiles', result.user.uid), {
           id: result.user.uid,
           nombre_completo: nombreCompleto,
@@ -131,7 +128,7 @@ export class FirebaseService {
     return runInInjectionContext(this.injector, async () => {
       try {
         const querySnapshot = await getDocs(collection(this.firestore, 'puntos_turisticos'));
-        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PuntoTuristico));
+        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) } as PuntoTuristico));
         return { data, error: null };
       } catch (error) {
         return { data: null, error };
@@ -144,7 +141,7 @@ export class FirebaseService {
       try {
         const q = query(collection(this.firestore, 'registros_conteo'), orderBy('creado_at', 'desc'));
         const querySnapshot = await getDocs(q);
-        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as RegistroConteo));
+        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) } as RegistroConteo));
         return { data, error: null };
       } catch (error) {
         return { data: null, error };
@@ -186,9 +183,55 @@ export class FirebaseService {
           orderBy('creado_at', 'desc')
         );
         const querySnapshot = await getDocs(q);
-        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as RegistroConteo));
+        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) } as RegistroConteo));
         return { data, error: null };
       } catch (error) {
+        return { data: null, error };
+      }
+    });
+  }
+
+  // --- NUEVA FUNCIÓN: Filtros por Día, Semana, Mes, Año y Punto ---
+  async getRegistrosPorPeriodoYPunto(periodo: 'dia' | 'semana' | 'mes' | 'año' | 'todo', puntoId: string) {
+    return runInInjectionContext(this.injector, async () => {
+      try {
+        let q = collection(this.firestore, 'registros_conteo') as any;
+
+        if (periodo !== 'todo') {
+          const ahora = new Date();
+          let fechaInicio = new Date();
+
+          if (periodo === 'dia') {
+            fechaInicio.setHours(0, 0, 0, 0);
+          } else if (periodo === 'semana') {
+            const diaSemana = ahora.getDay();
+            const diferenciaLunes = diaSemana === 0 ? -6 : 1 - diaSemana; 
+            fechaInicio.setDate(ahora.getDate() + diferenciaLunes);
+            fechaInicio.setHours(0, 0, 0, 0);
+          } else if (periodo === 'mes') {
+            fechaInicio.setDate(1);
+            fechaInicio.setHours(0, 0, 0, 0);
+          } else if (periodo === 'año') {
+            fechaInicio.setMonth(0, 1);
+            fechaInicio.setHours(0, 0, 0, 0);
+          }
+
+          q = query(q, where('creado_at', '>=', Timestamp.fromDate(fechaInicio)), orderBy('creado_at', 'desc'));
+        } else {
+          q = query(q, orderBy('creado_at', 'desc'));
+        }
+
+        const querySnapshot = await getDocs(q);
+        let data = querySnapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) } as RegistroConteo));
+
+        // Filtrado local por punto para evitar requerir índices compuestos en Firebase
+        if (puntoId !== 'todos') {
+          data = data.filter(record => record.punto_id === puntoId);
+        }
+
+        return { data, error: null };
+      } catch (error) {
+        console.error("Error obteniendo registros:", error);
         return { data: null, error };
       }
     });
@@ -201,7 +244,7 @@ export class FirebaseService {
       try {
         const q = query(collection(this.firestore, 'notificaciones'), orderBy('creado_at', 'desc'), limit(10));
         const querySnapshot = await getDocs(q);
-        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notificacion));
+        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) } as Notificacion));
         return { data, error: null };
       } catch (error) {
         return { data: null, error };
@@ -227,14 +270,13 @@ export class FirebaseService {
         this.zone.run(() => {
           snapshot.docChanges().forEach((change) => {
             if (change.type === 'added') {
-              callback({ id: change.doc.id, ...change.doc.data() } as Notificacion);
+              callback({ id: change.doc.id, ...(change.doc.data() as any) } as Notificacion);
             }
           });
         });
       });
     });
   }
-
 
   // --- IA Adaptativa ---
 
@@ -248,7 +290,6 @@ export class FirebaseService {
       }
     });
   }
-
 
   async saveCalibrationData(puntoId: string, calibration: Partial<CalibrationData>) {
     return runInInjectionContext(this.injector, async () => {
@@ -334,7 +375,7 @@ export class FirebaseService {
           orderBy('creado_at', 'desc')
         );
         const querySnapshot = await getDocs(q);
-        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as SesionStreaming));
+        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) } as SesionStreaming));
         return { data, error: null };
       } catch (error) {
         console.error('Error al obtener sesiones:', error);
@@ -342,7 +383,6 @@ export class FirebaseService {
       }
     });
   }
-
 
   async responderSesionStreaming(sessionId: string, answer: RTCSessionDescriptionInit) {
     return runInInjectionContext(this.injector, async () => {

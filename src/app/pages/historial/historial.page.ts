@@ -3,14 +3,14 @@ import { DatePipe, UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
   IonIcon, IonButton, IonBadge, IonContent, IonRefresher, IonRefresherContent, 
-  IonList, IonItem, IonLabel, IonSearchbar, IonSkeletonText,
-  IonFab, IonFabButton, IonSpinner,
+  IonList, IonItem, IonLabel, IonSkeletonText, IonSelect, IonSelectOption,
+  IonFab, IonFabButton, IonSpinner, IonSegment, IonSegmentButton,
   NavController, ToastController, ModalController 
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
   receiptOutline, notificationsOutline, downloadOutline, 
-  documentTextOutline, searchOutline, chevronForwardOutline, people
+  documentTextOutline, searchOutline, chevronForwardOutline, people, locationOutline
 } from 'ionicons/icons';
 import { FirebaseService, PuntoTuristico, Notificacion } from '../../services/firebase.service';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
@@ -34,7 +34,8 @@ export interface HistoryRecord {
   imports: [
     FormsModule,
     IonIcon, IonButton, IonBadge, IonContent, IonRefresher, IonRefresherContent, 
-    IonFab, IonFabButton, IonSpinner, IonList, IonItem, IonLabel, IonSearchbar, IonSkeletonText,
+    IonFab, IonFabButton, IonSpinner, IonList, IonItem, IonLabel, IonSelect, IonSelectOption,
+    IonSkeletonText, IonSegment, IonSegmentButton,
     DatePipe, UpperCasePipe,
     HeaderComponent
   ]
@@ -42,34 +43,76 @@ export interface HistoryRecord {
 export class HistorialPage implements OnInit, OnDestroy {
   private firebaseSvc = inject(FirebaseService);
   private toastCtrl = inject(ToastController);
-  private navCtrl = inject(NavController);
   private modalCtrl = inject(ModalController);
 
   isLoading = signal(true);
-  searchQuery = signal(''); 
+  
+  // Filtros
+  filtroPeriodo = signal<'dia' | 'semana' | 'mes' | 'año' | 'todo'>('todo');
+  selectedPunto = signal<string>('todos');
+  
+  puntosDeControl = signal<PuntoTuristico[]>([]);
   allRecords = signal<HistoryRecord[]>([]); 
   
   notifications = signal<Notificacion[]>([]);
   unreadNotificationsCount = signal(0);
   private unsubscribeNotifs: any;
   
-  filteredRecords = computed(() => {
-    const query = this.searchQuery().toLowerCase().trim();
-    if (!query) return this.allRecords();
-    return this.allRecords().filter(r => 
-      r.punto.toLowerCase().includes(query) || 
-      r.ubicacion.toLowerCase().includes(query)
-    );
+  // LOGICA DE CONSOLIDACION DE DATOS
+  displayRecords = computed(() => {
+    const raw = this.allRecords();
+    const periodo = this.filtroPeriodo();
+    
+    // Si queremos ver "todo" o no hay datos, mostramos la lista normal
+    if (periodo === 'todo' || raw.length === 0) return raw;
+
+    // Sumar toda la afluencia de los registros filtrados
+    const total = raw.reduce((acc, curr) => acc + curr.afluencia, 0);
+    const first = raw[0];
+    const hoy = new Date();
+    
+    let labelFecha = '';
+    let labelPeriodo = '';
+
+    if (periodo === 'dia') {
+      labelFecha = hoy.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+      labelPeriodo = 'TOTAL HOY HRS';
+    } else if (periodo === 'semana') {
+      const diffLunes = hoy.getDay() === 0 ? -6 : 1 - hoy.getDay();
+      const lunes = new Date(hoy); 
+      lunes.setDate(hoy.getDate() + diffLunes);
+      const domingo = new Date(lunes);
+      domingo.setDate(lunes.getDate() + 6);
+      labelFecha = `${lunes.getDate()} al ${domingo.getDate()} ${lunes.toLocaleDateString('es-MX', {month:'short'})}`;
+      labelPeriodo = 'RESUMEN SEMANAL';
+    } else if (periodo === 'mes') {
+      labelFecha = hoy.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' }).toUpperCase();
+      labelPeriodo = 'RESUMEN MENSUAL';
+    } else if (periodo === 'año') {
+      labelFecha = hoy.getFullYear().toString();
+      labelPeriodo = 'RESUMEN ANUAL';
+    }
+
+    // Devolvemos un solo objeto (una fila) con el gran total
+    return [{
+      id: 'summary',
+      punto: this.selectedPunto() === 'todos' ? 'Múltiples Puntos' : first.punto,
+      ubicacion: first.ubicacion,
+      fecha: labelFecha,
+      hora: labelPeriodo,
+      afluencia: total
+    }];
   });
 
   constructor() {
     addIcons({ 
       receiptOutline, notificationsOutline, downloadOutline, 
-      documentTextOutline, searchOutline, chevronForwardOutline, people
+      documentTextOutline, searchOutline, chevronForwardOutline, people, locationOutline
     });
   }
 
   async ngOnInit() {
+    await this.cargarPuntosDeControl();
     await this.loadHistory();
     this.loadNotificaciones();
     this.initRealtimeNotifications();
@@ -77,6 +120,13 @@ export class HistorialPage implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.unsubscribeNotifs) this.unsubscribeNotifs();
+  }
+
+  async cargarPuntosDeControl() {
+    const res = await this.firebaseSvc.getPuntosTuristicos();
+    if (res.data) {
+      this.puntosDeControl.set(res.data);
+    }
   }
 
   async loadNotificaciones() {
@@ -108,16 +158,25 @@ export class HistorialPage implements OnInit, OnDestroy {
     this.unreadNotificationsCount.set(0);
   }
 
+  async cambiarPeriodo(event: any) {
+    this.filtroPeriodo.set(event.detail.value);
+    await this.loadHistory();
+  }
+
+  async cambiarPunto(event: any) {
+    this.selectedPunto.set(event.detail.value);
+    await this.loadHistory();
+  }
+
   async loadHistory() {
     this.isLoading.set(true);
     
-    const [puntosRes, registrosRes] = await Promise.all([
-      this.firebaseSvc.getPuntosTuristicos(),
-      this.firebaseSvc.getHistorialCompleto()
-    ]);
+    const periodo = this.filtroPeriodo() as 'dia' | 'semana' | 'mes' | 'año' | 'todo';
+    const puntoId = this.selectedPunto();
 
-    const puntos = puntosRes.data || [];
+    const registrosRes = await this.firebaseSvc.getRegistrosPorPeriodoYPunto(periodo, puntoId);
     const registros = registrosRes.data || [];
+    const puntos = this.puntosDeControl();
 
     if (registros) {
       const formattedData: HistoryRecord[] = registros.map((item) => {
@@ -138,12 +197,6 @@ export class HistorialPage implements OnInit, OnDestroy {
     this.isLoading.set(false);
   }
 
-  async handleRefresh(event: any) {
-    await Haptics.impact({ style: ImpactStyle.Medium });
-    await this.loadHistory();
-    event.target.complete();
-  }
-
   async exportGlobalCSV() {
     await Haptics.impact({ style: ImpactStyle.Heavy });
     const data = this.allRecords();
@@ -151,17 +204,41 @@ export class HistorialPage implements OnInit, OnDestroy {
       this.showToast('No hay datos para exportar', 'warning');
       return;
     }
+
+    let nombrePuntoStr = 'TodosLosPuntos';
+    if (this.selectedPunto() !== 'todos') {
+      const p = this.puntosDeControl().find(x => x.id === this.selectedPunto());
+      if (p) nombrePuntoStr = p.nombre.replace(/\s+/g, '_');
+    }
+
     const headers = ['Punto', 'Ubicacion', 'Fecha', 'Hora', 'Afluencia'];
     const rows = data.map(r => [r.punto, `"${r.ubicacion}"`, r.fecha, r.hora, r.afluencia].join(','));
-    this.downloadCSV(headers.join(',') + '\n' + rows.join('\n'), 'Historial_Completo.csv');
+    
+    const fileName = `Reporte_${nombrePuntoStr}_${this.filtroPeriodo().toUpperCase()}.csv`;
+    this.downloadCSV(headers.join(',') + '\n' + rows.join('\n'), fileName);
     this.showToast('Reporte generado correctamente', 'success');
   }
 
   async exportRow(record: HistoryRecord) {
     await Haptics.impact({ style: ImpactStyle.Light });
-    const content = `Punto,${record.punto}\nFecha,${record.fecha}\nHora,${record.hora}\nAfluencia,${record.afluencia}`;
-    this.downloadCSV(content, `Registro_${record.punto}.csv`);
-    this.showToast('Descargando registro...', 'primary');
+    let content = '';
+    let fileName = '';
+
+    // Si le da descargar a la fila de resumen, le descargamos TODOS los registros que conforman ese resumen
+    if (record.id === 'summary') {
+      const data = this.allRecords();
+      const headers = ['Punto', 'Ubicacion', 'Fecha', 'Hora', 'Afluencia'];
+      const rows = data.map(r => [r.punto, `"${r.ubicacion}"`, r.fecha, r.hora, r.afluencia].join(','));
+      content = headers.join(',') + '\n' + rows.join('\n');
+      fileName = `Desglose_${this.filtroPeriodo().toUpperCase()}.csv`;
+      this.showToast('Descargando desglose completo...', 'primary');
+    } else {
+      content = `Punto,${record.punto}\nFecha,${record.fecha}\nHora,${record.hora}\nAfluencia,${record.afluencia}`;
+      fileName = `Registro_${record.punto}.csv`;
+      this.showToast('Descargando registro...', 'primary');
+    }
+
+    this.downloadCSV(content, fileName);
   }
 
   private async showToast(message: string, color: string) {
