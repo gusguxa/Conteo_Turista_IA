@@ -81,7 +81,7 @@ export class CamaraPage implements OnInit, OnDestroy {
   unreadNotificationsCount = signal<number>(0);
 
   // --- IA Adaptativa ---
-  confidenceThreshold = signal(0.5);
+  confidenceThreshold = signal(0.75); // Elevado por defecto
   avgConfidence = signal(0);
   totalDetections = signal(0);
   correctionsPositive = signal(0);
@@ -198,13 +198,13 @@ export class CamaraPage implements OnInit, OnDestroy {
   async loadCalibration(puntoId: string) {
     const { data } = await this.firebaseSvc.getCalibrationData(puntoId);
     if (data) {
-      this.confidenceThreshold.set(data.umbral_confianza || 0.5);
+      this.confidenceThreshold.set(data.umbral_confianza || 0.75);
       this.avgConfidence.set(data.confianza_promedio || 0);
       this.totalDetections.set(data.total_detecciones || 0);
       this.correctionsPositive.set(data.correcciones_positivas || 0);
       this.correctionsNegative.set(data.correcciones_negativas || 0);
     } else {
-      this.confidenceThreshold.set(0.5);
+      this.confidenceThreshold.set(0.75);
       this.avgConfidence.set(0);
       this.totalDetections.set(0);
       this.correctionsPositive.set(0);
@@ -233,12 +233,12 @@ export class CamaraPage implements OnInit, OnDestroy {
     if (delta > 0) {
       this.correctionsPositive.update(v => v + 1);
       this.entradasActuales.update(v => v + 1);
-      this.confidenceThreshold.update(v => Math.max(0.2, v - 0.02));
+      this.confidenceThreshold.update(v => Math.max(0.60, v - 0.02)); // Nunca bajará de 60%
       this.showToast('Corrección +1 aplicada. IA calibrada.', 'success');
     } else {
       this.correctionsNegative.update(v => v + 1);
       this.entradasActuales.update(v => Math.max(0, v - 1));
-      this.confidenceThreshold.update(v => Math.min(0.9, v + 0.02));
+      this.confidenceThreshold.update(v => Math.min(0.95, v + 0.02));
       this.showToast('Corrección -1 aplicada. IA calibrada.', 'warning');
     }
 
@@ -321,10 +321,26 @@ export class CamaraPage implements OnInit, OnDestroy {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
 
-        const predictions = await this.model.detect(video);
+        // UMBRAL SÚPER ESTRICTO: Ignora de raíz cualquier cosa por debajo del 75%
+        const umbralEstricto = Math.max(0.75, this.confidenceThreshold());
+        const predictions = await this.model.detect(video, 20, umbralEstricto);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        const currentPeople = predictions.filter(p => p.class === 'person' && p.score > this.confidenceThreshold());
+        // TRIPLE VALIDACIÓN: Confianza + Tamaño + Proporción Humana
+        const currentPeople = predictions.filter(p => {
+          const [x, y, width, height] = p.bbox;
+          
+          const esPersona = p.class === 'person' && p.score >= umbralEstricto;
+          
+          // Filtro Morfológico 1: Debe ser más grande que una mano/pie (mínimo 50x100px aprox)
+          const tamanoMinimo = width >= 40 && height >= 90;
+          
+          // Filtro Morfológico 2: Las personas de pie son más altas que anchas
+          // El 0.75 permite cierta holgura por si mueven los brazos o llevan mochilas
+          const proporcionHumana = height >= (width * 0.75);
+
+          return esPersona && tamanoMinimo && proporcionHumana;
+        });
         
         if (currentPeople.length > 0) {
           const avgScore = currentPeople.reduce((acc, p) => acc + p.score, 0) / currentPeople.length;

@@ -18,7 +18,6 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import * as tf from '@tensorflow/tfjs';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
 
-
 import { HeaderComponent } from '../../header/header.component';
 
 @Component({
@@ -201,10 +200,11 @@ export class MonitoreoPage implements OnInit, OnDestroy {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
 
-        const predictions = await this.model.detect(video);
+        // SE ESTABLECE UN UMBRAL ESTRICTO DE 0.65 (65% DE CERTEZA) EN EL VISOR
+        const predictions = await this.model.detect(video, 20, 0.65);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        predictions.filter(p => p.class === 'person' && p.score > 0.5).forEach(person => {
+        predictions.filter(p => p.class === 'person' && p.score > 0.65).forEach(person => {
           const [x, y, width, height] = person.bbox;
           
           // Estilo minimalista y premium
