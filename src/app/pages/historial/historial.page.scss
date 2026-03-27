@@ -1,203 +1,257 @@
-/* --- 1. VARIABLES DINÁMICAS (Modo Claro) --- */
+/* ============================================================
+   1. VARIABLES DE DISEÑO (Sincronizadas con Centro de Control)
+   ============================================================ */
+
+/* FORZAR LA TIPOGRAFÍA EN TODOS LOS ELEMENTOS DE ESTA VISTA */
+:host, ion-content, * {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+
 :host {
-  --primary: #3b82f6; 
-  --success: #10b981; 
-  
-  --bg-page: #f8fafc;
-  --bg-card: #ffffff;
-  --text-main: #1e293b;
-  --text-muted: #64748b;
-  --border-color: #e2e8f0;
-  --bg-hover: #f1f5f9;
-  --bg-badge: #f8fafc;
+  --app-bg: #f8fafc;
+  --app-card-bg: #ffffff;
+  --app-text-main: #0f172a;
+  --app-text-muted: #64748b;
+  --app-border: #e2e8f0;
+  --app-hover: #f1f5f9;
+  --app-card-shadow: 0 10px 30px -10px rgba(0,0,0,0.08);
+  --app-primary-rgb: 59, 130, 246; /* Azul base para opacidades */
 }
 
-/* --- 2. EL MODO OSCURO "A PRUEBA DE BALAS" --- */
-/* Forzamos a que Angular busque la clase en html o body y usamos !important */
-:host-context(html.ion-palette-dark),
-:host-context(body.ion-palette-dark),
+/* --- MODO OSCURO "A PRUEBA DE BALAS" --- */
+:host-context(.dark),
 :host-context(.ion-palette-dark) {
-  --bg-page: #0c1220 !important; 
-  --bg-card: #0f172a !important; 
-  --text-main: #f8fafc !important; 
-  --text-muted: #94a3b8 !important; 
-  --border-color: #0c1220 !important; 
-    --bg-hover: #1e293b !important; 
-  --bg-badge: #0f172a !important;
+  --app-bg: #0c1220 !important; 
+  --app-card-bg: #0f172a !important; 
+  --app-text-main: #ffffff !important; 
+  --app-text-muted: #94a3b8 !important; 
+  --app-border: #1e293b !important; 
+  --app-hover: #162032 !important; 
+  --app-card-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
 }
 
-/* Respaldo por si Ionic usa preferencias directas del sistema */
 @media (prefers-color-scheme: dark) {
-  :host {
-    --bg-page: #000000 !important; 
-    --bg-card: #0f172a !important; 
-    --text-main: #f8fafc !important; 
-    --text-muted: #94a3b8 !important; 
-    --border-color: #1e293b !important; 
-    --bg-hover: #1e293b !important; 
-    --bg-badge: #0f172a !important;
+  :host-context(body), :host {
+    --app-bg: #0c1220 !important; 
+    --app-card-bg: #0f172a !important; 
+    --app-text-main: #ffffff !important; 
+    --app-text-muted: #94a3b8 !important; 
+    --app-border: #1e293b !important; 
+    --app-hover: #162032 !important; 
   }
 }
 
-/* --- FORZAR VARIABLES EN EL FONDO --- */
+/* ============================================================
+   2. CONTENEDOR PRINCIPAL Y TIPOGRAFÍA
+   ============================================================ */
 ion-content {
-  /* Usamos la variable nativa de Ionic también, para doble seguridad */
-  --background: var(--bg-page) !important;
-  --ion-background-color: var(--bg-page) !important;
+  --background: var(--app-bg) !important;
 }
 
 .responsive-container {
   padding: 24px;
-  background: var(--bg-page) !important;
-  background-color: var(--bg-page) !important;
+  background: transparent !important;
   min-height: 100vh;
 }
 
-/* --- 3. HEADER Y BOTONES --- */
+/* --- CABECERA --- */
 .page-header-aligned {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
 
   .title-block h1 {
     font-size: 28px;
     font-weight: 800;
-    color: var(--text-main); 
+    color: var(--app-text-main) !important; 
     margin: 0;
-  }
-
-  .action-buttons {
-    display: flex;
-    gap: 12px;
-    
-    button {
-      display: flex; align-items: center; gap: 8px;
-      padding: 10px 18px; border-radius: 10px;
-      font-weight: 700; font-size: 14px; cursor: pointer;
-    }
-
-    .btn-outline {
-      background: var(--bg-card); 
-      border: 1px solid var(--border-color);
-      color: var(--text-main); 
-      &:hover { background: var(--bg-hover); }
-    }
-    
-    .btn-solid {
-      background: var(--success);
-      color: #ffffff;
-      border: none;
-      &:hover { opacity: 0.9; }
-    }
+    letter-spacing: -0.5px;
   }
 }
 
-/* --- 4. BUSCADOR --- */
-.search-bar {
-  display: flex;
-  align-items: center;
-  background: var(--bg-card); 
-  padding: 0 20px;
-  border-radius: 14px;
-  border: 1px solid var(--border-color);
-  height: 55px;
-  margin-bottom: 40px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-
-  ion-icon { color: var(--text-muted); font-size: 20px; }
+/* ============================================================
+   3. FILTROS (Select y Segmentos)
+   ============================================================ */
+.punto-filter ion-item {
+  --background: var(--app-card-bg) !important;
+  --border-color: var(--app-border) !important;
+  --border-width: 2px !important;
+  --border-radius: 16px !important;
+  --padding-start: 15px;
+  box-shadow: var(--app-card-shadow);
+  margin-bottom: 10px;
   
-  input {
-    background: transparent;
-    border: none;
-    color: var(--text-main); 
-    width: 100%;
-    margin-left: 10px;
-    outline: none;
-    font-size: 16px;
-    &::placeholder { color: var(--text-muted); }
+  ion-select {
+    color: var(--app-text-main) !important;
+    font-weight: 600;
+    font-size: 15px;
   }
 }
 
-/* --- 5. TABLA / TARJETAS --- */
+.period-filter ion-segment {
+  background: var(--app-card-bg) !important;
+  border: 2px solid var(--app-border);
+  border-radius: 14px;
+  padding: 4px;
+  box-shadow: var(--app-card-shadow);
+
+  ion-segment-button {
+    --color: var(--app-text-muted);
+    --color-checked: var(--app-text-main);
+    --indicator-color: var(--app-hover);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    border-radius: 10px;
+  }
+}
+
+/* ============================================================
+   4. TABLA DE DATOS (Estilo Tarjetas)
+   ============================================================ */
 .data-table {
+  margin-top: 30px;
+
+  /* Encabezados de columnas */
   .table-header-grid {
     display: grid;
     grid-template-columns: 2fr 1.5fr 1fr 80px;
-    padding: 0 25px 15px;
+    padding: 0 20px 15px;
     gap: 15px;
+    
     div {
-      color: var(--text-muted);
-      font-size: 11px; font-weight: 800; text-transform: uppercase;
+      color: var(--app-text-muted) !important;
+      font-size: 11px; 
+      font-weight: 800; 
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
   }
 
   .table-body {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 16px; /* Espacio entre filas */
   }
 
+  /* Filas (Convertidas en tarjetas elegantes) */
   .table-row-grid {
     display: grid;
     grid-template-columns: 2fr 1.5fr 1fr 80px;
-    background: var(--bg-card); 
-    padding: 20px 25px;
-    border-radius: 16px;
+    background: var(--app-card-bg) !important; 
+    padding: 20px;
+    border-radius: 20px;
     align-items: center;
     gap: 15px;
-    border: 1px solid var(--border-color);
-    border-left: 6px solid var(--primary);
-    transition: all 0.2s ease;
+    border: 2px solid var(--app-border) !important;
+    box-shadow: var(--app-card-shadow);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
     &:hover {
-      transform: translateY(-2px);
-      background: var(--bg-hover);
+      transform: translateY(-5px);
+      border-color: var(--ion-color-primary) !important;
     }
 
-    strong { color: var(--text-main); }
-    .col-fecha { color: var(--text-main); }
+    /* Agrupador de textos internos */
+    .text-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+
+      strong { 
+        color: var(--app-text-main) !important; 
+        font-size: 16px;
+        font-weight: 700;
+      }
+    }
   }
 }
 
-/* --- 6. DETALLES --- */
+/* ============================================================
+   5. DETALLES VISUALES (Píldoras, Badges y Botones)
+   ============================================================ */
+   
+/* Etiqueta de Ubicación */
 .col-punto .location-tag {
-  color: var(--primary);
-  background: rgba(59, 130, 246, 0.12);
-  padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 800;
+  color: var(--ion-color-primary) !important;
+  background: rgba(var(--app-primary-rgb), 0.1) !important;
+  padding: 5px 10px; 
+  border-radius: 8px; 
+  font-size: 11px; 
+  font-weight: 800;
 }
 
+/* Etiqueta de Hora */
 .col-fecha .time-tag {
-  background: var(--bg-hover);
-  color: var(--text-muted);
-  padding: 4px 10px; border-radius: 6px; font-size: 12px;
+  background: var(--app-hover) !important;
+  color: var(--app-text-muted) !important;
+  padding: 5px 10px; 
+  border-radius: 8px; 
+  font-size: 12px;
+  font-weight: 600;
 }
 
+/* Número de Afluencia (Estilo Status del Centro de Control) */
 .col-afluencia .badge-number {
-  background: var(--bg-badge);
-  color: var(--text-main);
-  border: 1px solid var(--border-color);
-  width: 45px; height: 45px;
+  background: var(--app-hover) !important;
+  color: var(--app-text-main) !important;
+  width: 54px; height: 54px;
   display: flex; align-items: center; justify-content: center;
-  border-radius: 12px; font-size: 18px; font-weight: 800;
+  border-radius: 16px; 
+  font-size: 18px; 
+  font-weight: 800;
+  border: 2px solid var(--app-border) !important;
 }
 
+/* Botón de Descarga */
 .col-accion {
-  .btn-download {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-  }
+  display: flex;
+  justify-content: center;
   
-  ion-icon {
-    color: var(--text-muted);
-    font-size: 20px;
-    &:hover { color: var(--primary); }
+  .btn-download {
+    background: var(--app-hover) !important;
+    border: none;
+    width: 45px; height: 45px;
+    border-radius: 14px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s ease;
+    
+    ion-icon {
+      color: var(--app-text-muted) !important;
+      font-size: 22px;
+      transition: all 0.2s ease;
+    }
+    
+    &:hover {
+      background: rgba(var(--app-primary-rgb), 0.1) !important;
+      ion-icon { color: var(--ion-color-primary) !important; }
+    }
   }
 }
 
-/* --- 7. FAB --- */
+/* ============================================================
+   6. BOTÓN FLOTANTE (FAB)
+   ============================================================ */
 .fab-notifications ion-fab-button {
-  --background: #5086ff;
+  --background: var(--ion-color-primary);
   --color: #ffffff;
+  --box-shadow: 0 10px 20px rgba(var(--app-primary-rgb), 0.4);
+}
+
+/* ============================================================
+   7. FIX PARA EL MENÚ DESPLEGABLE (Action Sheet en Modo Oscuro)
+   ============================================================ */
+::ng-deep .dark ion-action-sheet,
+::ng-deep .ion-palette-dark ion-action-sheet,
+::ng-deep body.dark ion-action-sheet,
+::ng-deep body.ion-palette-dark ion-action-sheet {
+  --button-color: #ffffff !important;
+  --color: #ffffff !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  ::ng-deep ion-action-sheet {
+    --button-color: #ffffff !important;
+    --color: #ffffff !important;
+  }
 }
