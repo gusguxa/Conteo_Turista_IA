@@ -1,6 +1,6 @@
 Contador Turístico IA
 Descripción del Proyecto
-Este proyecto es una solución diseñada para el municipio de Calvillo, Aguascalientes. 
+Este proyecto es una solución diseñada para el municipio de Calvillo, Aguascalientes.
 Es una aplicación móvil multiplataforma desarrollada con Ionic 8 y Angular, que utiliza Inteligencia Artificial (TensorFlow.js) para el conteo y monitoreo de afluencia en puntos turísticos en tiempo real.
 La app permite a los administradores visualizar y analizar tendencias históricas y supervisar transmisiones en vivo.
 
@@ -19,28 +19,29 @@ Mapas: Leaflet.js.
 Streaming: WebRTC para señalización en vivo.
 
 Instalación y Configuración
+
 1. Clonar el repositorio
-Bash
-git clone https://github.com/tu-usuario/contador-turistico-ia.git
-cd contador-turistico-ia ( en caso de que este fuera de la carpeta)
+   Bash
+   git clone https://github.com/tu-usuario/contador-turistico-ia.git
+   cd contador-turistico-ia ( en caso de que este fuera de la carpeta)
 2. Instalar dependencias
-Bash
-npm install
+   Bash
+   npm install
 3. Configuración de Firebase
-Asegúrate de tener configurado el archivo src/environments/environment.ts con las credenciales de Firebase.
+   Asegúrate de tener configurado el archivo src/environments/environment.ts con las credenciales de Firebase.
 4. Ejecución en modo desarrollo
-Bash
-ionic serve
+   Bash
+   ionic serve
 5. Sincronización con plataformas nativas (Android/iOS)
-Bash
-npx cap sync
-npx cap open android (para abrir la app con Android studio)
+   Bash
+   npx cap sync
+   npx cap open android (para abrir la app con Android studio)
 
 Desarrolladores
 Leilani Serna Gómez
-(Aquí agregren su nombre porfi) 
+Juan Pablo Castañeda Velasco
+(Aquí agregren su nombre porfi)
 Institución
- Universidad Tecnológica de Calvillo
+Universidad Tecnológica de Calvillo
 Carrera
 Ingeniería en Tecnologías de la Información
-
