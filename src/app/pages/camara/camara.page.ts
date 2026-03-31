@@ -25,6 +25,12 @@ import * as cocoSsd from '@tensorflow-models/coco-ssd';
 // Nuestro nuevo Header
 import { HeaderComponent } from '../../header/header.component';
 
+
+interface PersonCooldown {
+  colorKey: string;   // Hash cuantizado del color de ropa (torso)
+  expires: number;    // Timestamp de expiración
+}
+
 @Component({
   selector: 'app-camara',
   templateUrl: './camara.page.html',
@@ -80,8 +86,8 @@ export class CamaraPage implements OnInit, OnDestroy {
   notifications = signal<Notificacion[]>([]);
   unreadNotificationsCount = signal<number>(0);
 
-  // --- IA Adaptativa ---
-  confidenceThreshold = signal(0.75); // Elevado por defecto
+  //IA Adaptativa
+  confidenceThreshold = signal(0.75);
   avgConfidence = signal(0);
   totalDetections = signal(0);
   correctionsPositive = signal(0);
@@ -93,6 +99,19 @@ export class CamaraPage implements OnInit, OnDestroy {
   private previousBlobs: { x: number; y: number; id: number; counted?: boolean }[] = [];
   private nextBlobId = 1;
   private countedIds = new Set<number>();
+
+  // Registra el color de ropa de cada persona contada.
+  private personCooldowns: PersonCooldown[] = [];
+
+  // Canvas oculto para extraer píxeles sin tocar el canvas principal
+  private offscreenCanvas: HTMLCanvasElement = document.createElement('canvas');
+  private offscreenCtx: CanvasRenderingContext2D = this.offscreenCanvas.getContext('2d')!;
+
+  // Ajustar según cuánto tiempo suele permanecer un turista en la zona
+  private readonly COOLDOWN_MS = 5 * 60 * 1000;
+
+  // Tolerancia de color (0–255): más alto = menos estricto ante cambios de luz
+  private readonly COLOR_TOLERANCE = 28;
 
   constructor() {
     addIcons({
@@ -115,6 +134,7 @@ export class CamaraPage implements OnInit, OnDestroy {
     this.stopCamera();
     if (this.calibrationInterval) clearInterval(this.calibrationInterval);
     if (this.unsubscribeNotifs) this.unsubscribeNotifs();
+    this.personCooldowns = [];
   }
 
   async loadNotificaciones() {
@@ -151,7 +171,7 @@ export class CamaraPage implements OnInit, OnDestroy {
     this.unreadNotificationsCount.set(0);
   }
 
-  // --- Modelo IA ---
+  // Modelo IA 
   async initAiModel() {
     try {
       await tf.setBackend('webgl');
@@ -163,7 +183,7 @@ export class CamaraPage implements OnInit, OnDestroy {
     }
   }
 
-  // --- Ubicaciones ---
+  // Ubicaciones
   async loadLocations() {
     this.isLoading.set(true);
     const { data, error } = await this.firebaseSvc.getPuntosTuristicos();
@@ -190,11 +210,13 @@ export class CamaraPage implements OnInit, OnDestroy {
       this.previousBlobs = [];
       this.nextBlobId = 1;
       this.countedIds.clear();
+      // Limpiar cooldowns al cambiar de punto turístico
+      this.personCooldowns = [];
       await this.loadCalibration(location.id);
     }
   }
 
-  // --- Calibración IA por ubicación ---
+  //Calibración IA por ubicación
   async loadCalibration(puntoId: string) {
     const { data } = await this.firebaseSvc.getCalibrationData(puntoId);
     if (data) {
@@ -233,7 +255,7 @@ export class CamaraPage implements OnInit, OnDestroy {
     if (delta > 0) {
       this.correctionsPositive.update(v => v + 1);
       this.entradasActuales.update(v => v + 1);
-      this.confidenceThreshold.update(v => Math.max(0.60, v - 0.02)); // Nunca bajará de 60%
+      this.confidenceThreshold.update(v => Math.max(0.60, v - 0.02));
       this.showToast('Corrección +1 aplicada. IA calibrada.', 'success');
     } else {
       this.correctionsNegative.update(v => v + 1);
@@ -258,7 +280,7 @@ export class CamaraPage implements OnInit, OnDestroy {
     }
   }
 
-  // --- Cámara ---
+  // Cámara
   async startCamera() {
     try {
       if (!window.isSecureContext && !this.platform.is('desktop')) {
@@ -295,7 +317,7 @@ export class CamaraPage implements OnInit, OnDestroy {
     }
   }
 
-  // --- Conteo e IA Loop ---
+  // Conteo e IA Loop
   async toggleDetection() {
     await Haptics.impact({ style: ImpactStyle.Medium });
     if (this.isDetecting()) {
@@ -321,18 +343,18 @@ export class CamaraPage implements OnInit, OnDestroy {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
 
-        // UMBRAL SÚPER ESTRICTO: Ignora de raíz cualquier cosa por debajo del 75%
+        // Ignora de raíz cualquier cosa por debajo del 75%
         const umbralEstricto = Math.max(0.75, this.confidenceThreshold());
         const predictions = await this.model.detect(video, 20, umbralEstricto);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // TRIPLE VALIDACIÓN: Confianza + Tamaño + Proporción Humana
+        
         const currentPeople = predictions.filter(p => {
           const [x, y, width, height] = p.bbox;
           
           const esPersona = p.class === 'person' && p.score >= umbralEstricto;
           
-          // Filtro Morfológico 1: Debe ser más grande que una mano/pie (mínimo 50x100px aprox)
+          // Filtro Morfológico
           const tamanoMinimo = width >= 40 && height >= 90;
           
           // Filtro Morfológico 2: Las personas de pie son más altas que anchas
@@ -385,8 +407,9 @@ export class CamaraPage implements OnInit, OnDestroy {
           if (blob && !blob.counted && centerY > umbralY) {
             blob.counted = true;
             if (!this.countedIds.has(matchedId)) {
-                this.countedIds.add(matchedId);
-                this.zoneUpdateCount();
+              this.countedIds.add(matchedId);
+              // Pasar bbox para verificar cooldown por color de ropa
+              this.zoneUpdateCount([x, y, width, height]);
             }
           }
         });
@@ -423,7 +446,77 @@ export class CamaraPage implements OnInit, OnDestroy {
     ctx.stroke();
   }
 
-  private async zoneUpdateCount() {
+  
+  private getTorsoColorKey(
+    video: HTMLVideoElement,
+    bbox: [number, number, number, number]
+  ): string | null {
+    const [x, y, w, h] = bbox;
+    if (w < 30 || h < 60) return null;
+
+    try {
+      // Franja central: evita cabeza (arriba) y piernas (abajo)
+      const tx = Math.max(0, x + w * 0.20);
+      const ty = Math.max(0, y + h * 0.35);
+      const tw = Math.floor(w * 0.60);
+      const th = Math.floor(h * 0.30);
+
+      this.offscreenCanvas.width = tw;
+      this.offscreenCanvas.height = th;
+      this.offscreenCtx.drawImage(video, tx, ty, tw, th, 0, 0, tw, th);
+
+      const pixels = this.offscreenCtx.getImageData(0, 0, tw, th).data;
+
+      let r = 0, g = 0, b = 0, count = 0;
+      for (let i = 0; i < pixels.length; i += 4) {
+        r += pixels[i];
+        g += pixels[i + 1];
+        b += pixels[i + 2];
+        count++;
+      }
+      if (count === 0) return null;
+
+      // Cuantizar: agrupa colores similares en el mismo "bucket"
+      // COLOR_TOLERANCE = 28 → variaciones menores de ~11% se consideran el mismo color
+      const t = this.COLOR_TOLERANCE;
+      const qr = Math.round((r / count) / t) * t;
+      const qg = Math.round((g / count) / t) * t;
+      const qb = Math.round((b / count) / t) * t;
+
+      return `${qr}-${qg}-${qb}`;
+    } catch {
+      return null;
+    }
+  }
+
+  
+  private isInCooldown(colorKey: string): boolean {
+    const now = Date.now();
+
+    // Limpiar expirados (O(n), pero n es pequeño en uso normal)
+    this.personCooldowns = this.personCooldowns.filter(p => p.expires > now);
+
+    const existing = this.personCooldowns.find(p => p.colorKey === colorKey);
+    if (existing) {
+      existing.expires = now + this.COOLDOWN_MS; // Renovar mientras siga en zona
+      return true;
+    }
+
+    this.personCooldowns.push({ colorKey, expires: now + this.COOLDOWN_MS });
+    return false;
+  }
+
+  
+
+  private async zoneUpdateCount(bbox: [number, number, number, number]) {
+    const video = this.videoElement.nativeElement;
+    const colorKey = this.getTorsoColorKey(video, bbox);
+
+    if (colorKey && this.isInCooldown(colorKey)) {
+      console.log(`[Cooldown] Persona ya contada (${colorKey}), ignorando`);
+      return; 
+    }
+    
     await Haptics.impact({ style: ImpactStyle.Light });
     this.entradasActuales.update(v => v + 1);
     this.cargaActual.update(v => v + 1);
@@ -434,7 +527,7 @@ export class CamaraPage implements OnInit, OnDestroy {
     }
   }
 
-  // --- Streaming ---
+  // Streaming
   async toggleStreaming(event?: any) {
     await Haptics.impact({ style: ImpactStyle.Medium });
     if (this.isStreaming()) {
@@ -523,7 +616,7 @@ export class CamaraPage implements OnInit, OnDestroy {
     this.iceCandidateQueue = [];
   }
 
-  // --- UI Helpers ---
+  // UI Helpers
   async showToast(message: string, color: string = 'primary') {
     const toast = await this.toastCtrl.create({
       message,
