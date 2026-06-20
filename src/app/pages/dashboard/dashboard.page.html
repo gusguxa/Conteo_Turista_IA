@@ -184,12 +184,5 @@
     </div>
   </div>
 
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="fab-notifications">
-    <ion-fab-button (click)="openNotifications()">
-      <ion-icon name="notifications-outline"></ion-icon>
-      @if (unreadNotificationsCount() > 0) {
-        <ion-badge color="danger" class="notif-badge-fab">{{ unreadNotificationsCount() }}</ion-badge>
-      }
-    </ion-fab-button>
-  </ion-fab>
+  
 </ion-content>
